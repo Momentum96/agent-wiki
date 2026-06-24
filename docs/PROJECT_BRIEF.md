@@ -26,7 +26,7 @@ That guide is detailed enough for a careful manual setup. The missing layer is p
 Build a globally installable CLI that can configure the local agent wiki workflow with:
 
 ```bash
-bun install -g agent-wiki
+bun install -g @momentum96/agent-wiki
 agent-wiki doctor
 agent-wiki setup
 agent-wiki verify
@@ -103,7 +103,6 @@ The implementation must allow target paths to be overridden by CLI flags or envi
 
 ## Open Decisions
 
-- Final npm package name.
-- Whether the package should publish under a scope.
+- Whether the first public npm publish should use the prepared `@momentum96/agent-wiki` package name or a different npm scope controlled by the maintainer.
 - Whether Windows should install `.ps1` helper scripts in addition to POSIX shell scripts, after PowerShell parser validation is available.
 - Whether to vendor qmd skill content exactly from `qmd skills get qmd --full` or keep a project-maintained `qmd-cli` template.

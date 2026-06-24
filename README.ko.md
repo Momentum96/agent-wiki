@@ -11,7 +11,7 @@
 
 ## 현재 상태
 
-이 저장소는 첫 CLI 마일스톤 단계입니다.
+이 저장소는 로컬 installer 흐름이 구현된 상태입니다.
 
 현재 구현됨:
 
@@ -19,12 +19,13 @@
 - `agent-wiki doctor`
 - `agent-wiki setup --dry-run`
 - `agent-wiki setup --install-prereqs`
+- `agent-wiki setup`
+- `agent-wiki verify`
 
-아직 미구현:
+배포 상태:
 
-- Codex config, qmd collection, skills, helper scripts를 실제로 수정하는 전체 `agent-wiki setup`
-- 운영용 `agent-wiki verify`
-- npm/Bun 패키지 배포
+- 패키지 메타데이터는 `@momentum96/agent-wiki` 기준으로 준비됨
+- 실제 npm publish는 `@momentum96` scope 권한이 있는 npm 로그인 필요
 
 ## 사람을 위한 안내
 
@@ -48,6 +49,8 @@ bun install
 bun run typecheck
 bun test
 bun run src/cli.ts doctor
+bun run src/cli.ts setup --skip-embed
+bun run src/cli.ts verify
 ```
 
 Codex 설정을 건드리지 않고 setup이 복사할 파일만 보려면:
@@ -78,8 +81,8 @@ Agent 규칙:
 - `git status --short`로 현재 작업트리 상태를 확인하세요.
 - Bun, Node.js, Codex, Homebrew, apt package, winget package는 사용자 승인 없이 설치하지 마세요.
 - `agent-wiki setup --install-prereqs` 또는 `bun run src/cli.ts setup --install-prereqs`는 실행해도 됩니다. qmd나 SQLite가 없어서 설치 질문이 나오면, `y`를 입력하기 전에 사용자에게 물어보세요.
-- 전체 setup mutation이 구현되기 전까지는 `setup --dry-run`을 사용하세요.
-- `verify`는 구현 전 예약 명령으로 취급하세요.
+- 먼저 `setup --dry-run`을 실행하고, 사용자가 실제 적용을 원하면 `setup --skip-embed`를 실행하세요.
+- setup 이후 `verify`를 실행하세요.
 - 실행한 명령과 pass/fail 결과를 사용자에게 정확히 보고하세요.
 
 최소 로컬 검증 흐름:
@@ -91,6 +94,8 @@ bun test
 bun run src/cli.ts paths --json
 bun run src/cli.ts doctor --json
 bun run src/cli.ts setup --dry-run --json
+bun run src/cli.ts setup --skip-embed --json
+bun run src/cli.ts verify --json
 ```
 
 ## 관리 대상
@@ -136,8 +141,8 @@ installer가 절대 복사하거나 패키징하면 안 되는 것:
 | `agent-wiki doctor` | 구현됨 | Bun, Node.js, qmd, SQLite, Codex 파일을 쓰기 없이 점검 |
 | `agent-wiki setup --install-prereqs` | 구현됨 | qmd와 SQLite를 확인하고, 빠진 항목만 승인 후 설치 제안 |
 | `agent-wiki setup --dry-run` | 구현됨 | packaged template을 임시 대상에 복사해 검사 |
-| `agent-wiki setup` | 이후 마일스톤 | 전체 로컬 agent wiki setup 생성/복구 |
-| `agent-wiki verify` | 이후 마일스톤 | 설치된 workflow에 대해 qmd smoke check 실행 |
+| `agent-wiki setup` | 구현됨 | 전체 로컬 agent wiki setup 생성/복구 |
+| `agent-wiki verify` | 구현됨 | 설치된 workflow에 대해 qmd smoke check 실행 |
 
 ## 문서
 

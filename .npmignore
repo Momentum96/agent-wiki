@@ -1,0 +1,6 @@
+src/__tests__/
+.omo/
+.codegraph/
+node_modules/
+*.log
+.DS_Store

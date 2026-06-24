@@ -28,7 +28,7 @@ export function applyManagedBlock(content: string, block: string): Result<string
   }
 
   const replacementEnd = end + END_MARKER.length
-  return ok(`${content.slice(0, start)}${block}${content.slice(replacementEnd)}`)
+  return ok(`${content.slice(0, start)}${trimTrailingNewlines(block)}${content.slice(replacementEnd)}`)
 }
 
 function allIndexes(content: string, search: string): readonly number[] {
@@ -46,4 +46,8 @@ function allIndexes(content: string, search: string): readonly number[] {
 function ensureTrailingNewline(value: string): string {
   if (value.endsWith("\n")) return value
   return `${value}\n`
+}
+
+function trimTrailingNewlines(value: string): string {
+  return value.replace(/\n+$/u, "")
 }

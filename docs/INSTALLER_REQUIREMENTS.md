@@ -163,15 +163,15 @@ At minimum, the implementation should eventually be tested with:
 | Windows native | Paths and command hints are Windows-safe. |
 | WSL | Paths do not cross native Windows and WSL environments. |
 
-## First Implementation Milestone
+## Implemented CLI Surface
 
-The first code milestone should only implement:
+The current CLI implements:
 
 1. Bun TypeScript CLI skeleton.
 2. `paths` command.
 3. `doctor` command with no writes.
 4. `setup --install-prereqs` for qmd and SQLite only.
-5. Template files copied into a temporary dry-run target.
-6. Unit tests for path resolution, prerequisite planning, and marker-block replacement.
-
-Do not implement real Codex config mutation until dry-run and backup behavior are tested.
+5. `setup --dry-run` copied into a temporary dry-run target.
+6. `setup` mutation for wiki files, skills, helper scripts, Codex config, global `AGENTS.md`, and qmd collection/context/update/search.
+7. `verify` qmd smoke checks.
+8. Unit tests for path resolution, prerequisite planning, marker-block replacement, setup idempotency, and verify failure reporting.

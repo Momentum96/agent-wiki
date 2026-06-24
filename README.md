@@ -11,20 +11,21 @@ It is designed for two readers:
 
 ## Current Status
 
-This repository is in the first CLI milestone.
+This repository now has the local installer flow implemented.
 
-Implemented in this milestone:
+Implemented:
 
 - `agent-wiki paths`
 - `agent-wiki doctor`
 - `agent-wiki setup --dry-run`
 - `agent-wiki setup --install-prereqs`
+- `agent-wiki setup`
+- `agent-wiki verify`
 
-Not implemented yet:
+Distribution status:
 
-- full `agent-wiki setup` mutation of Codex config, qmd collections, skills, and helper scripts
-- production `agent-wiki verify`
-- npm/Bun package publishing
+- Package metadata is prepared for `@momentum96/agent-wiki`.
+- Actual npm publishing requires an authenticated npm account with access to the `@momentum96` scope.
 
 ## For Humans
 
@@ -48,6 +49,8 @@ bun install
 bun run typecheck
 bun test
 bun run src/cli.ts doctor
+bun run src/cli.ts setup --skip-embed
+bun run src/cli.ts verify
 ```
 
 To see what setup would copy without touching your Codex config:
@@ -78,8 +81,8 @@ Rules for agents:
 - Check the current repository state with `git status --short`.
 - Do not install Bun, Node.js, Codex, Homebrew, apt packages, or winget packages without user approval.
 - You may run `agent-wiki setup --install-prereqs` or `bun run src/cli.ts setup --install-prereqs`; if qmd or SQLite is missing, ask the user before answering `y`.
-- Use `setup --dry-run` until full setup mutation is implemented.
-- Treat `verify` as reserved until it is implemented.
+- Prefer `setup --dry-run` first, then run `setup --skip-embed` when the user wants to apply changes.
+- Run `verify` after setup.
 - Report the exact commands run and their pass/fail result.
 
 Minimal local validation flow:
@@ -91,6 +94,8 @@ bun test
 bun run src/cli.ts paths --json
 bun run src/cli.ts doctor --json
 bun run src/cli.ts setup --dry-run --json
+bun run src/cli.ts setup --skip-embed --json
+bun run src/cli.ts verify --json
 ```
 
 ## What It Will Manage
@@ -136,8 +141,8 @@ The installer must never copy or package:
 | `agent-wiki doctor` | implemented | Inspect Bun, Node.js, qmd, SQLite, and Codex files without writing. |
 | `agent-wiki setup --install-prereqs` | implemented | Check qmd and SQLite and offer confirmed installation only for missing installable prerequisites. |
 | `agent-wiki setup --dry-run` | implemented | Copy packaged templates into a temporary target for inspection. |
-| `agent-wiki setup` | later milestone | Create or repair the full local agent wiki setup idempotently. |
-| `agent-wiki verify` | later milestone | Run qmd smoke checks against the installed workflow. |
+| `agent-wiki setup` | implemented | Create or repair the full local agent wiki setup idempotently. |
+| `agent-wiki verify` | implemented | Run qmd smoke checks against the installed workflow. |
 
 ## Documentation
 

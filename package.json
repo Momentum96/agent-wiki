@@ -1,14 +1,38 @@
 {
-  "name": "agent-wiki",
+  "name": "@momentum96/agent-wiki",
   "version": "0.1.0",
+  "description": "Install a qmd-backed local agent wiki workflow for Codex and compatible coding agents.",
   "type": "module",
   "bin": {
-    "agent-wiki": "./src/cli.ts"
+    "agent-wiki": "src/cli.ts"
   },
+  "files": [
+    "src/cli.ts",
+    "src/commands",
+    "src/core",
+    "templates",
+    "docs",
+    "LICENSE",
+    "README.md",
+    "README.ko.md"
+  ],
   "scripts": {
+    "prepublishOnly": "bun run typecheck && bun test",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
     "cli": "bun run src/cli.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Momentum96/agent-wiki.git"
+  },
+  "homepage": "https://github.com/Momentum96/agent-wiki#readme",
+  "bugs": {
+    "url": "https://github.com/Momentum96/agent-wiki/issues"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
   },
   "devDependencies": {
     "@types/bun": "latest",
