@@ -1,95 +1,121 @@
-# Agent Wiki Installer
+# Agent Wiki
 
-`agent-wiki` is a Bun-distributed setup tool for installing a qmd-backed local agent wiki workflow for Codex and compatible coding agents.
+[English](README.md) | [한국어](README.ko.md)
 
-The project turns the current manual setup guide into a repeatable CLI that can be installed globally:
+`agent-wiki` is a Bun/TypeScript CLI for setting up a local, qmd-backed markdown memory workflow for Codex and compatible coding agents.
 
-```bash
-bun install -g agent-wiki
-agent-wiki setup
-agent-wiki verify
+It is designed for two readers:
+
+- humans who want to understand what will be changed before running anything
+- AI agents who need a short, deterministic installation path they can follow for a user
+
+## Current Status
+
+This repository is in the first CLI milestone.
+
+Implemented in this milestone:
+
+- `agent-wiki paths`
+- `agent-wiki doctor`
+- `agent-wiki setup --dry-run`
+- `agent-wiki setup --install-prereqs`
+
+Not implemented yet:
+
+- full `agent-wiki setup` mutation of Codex config, qmd collections, skills, and helper scripts
+- production `agent-wiki verify`
+- npm/Bun package publishing
+
+## For Humans
+
+Recommended: ask your coding agent to inspect and run this project for you.
+
+Paste this into Codex, Claude Code, Cursor, OpenCode, or another coding agent:
+
+```text
+Install and validate agent-wiki from this repository:
+https://github.com/Momentum96/agent-wiki
+
+Read the README and docs/guide/installation.md first. Do not install Bun, Node.js, or Codex automatically. If qmd or SQLite is missing, show me the exact command and ask before installing.
 ```
 
-The installer should configure qmd, create a local markdown wiki, register the qmd MCP server with Codex, install required agent skills, and add safe global agent instructions without copying private local state.
+If you want to inspect it yourself:
 
-## Why This Exists
+```bash
+git clone https://github.com/Momentum96/agent-wiki.git
+cd agent-wiki
+bun install
+bun run typecheck
+bun test
+bun run src/cli.ts doctor
+```
 
-The current setup lives as a detailed markdown guide. That is useful for one careful human, but it is not enough for repeatable distribution.
+To see what setup would copy without touching your Codex config:
 
-This project should make the setup deterministic:
+```bash
+bun run src/cli.ts setup --dry-run
+```
 
-- no LLM needed to interpret the setup steps
-- no copy-pasting large `SKILL.md` blocks by hand
-- no accidental overwrite of existing Codex settings
-- clear diagnostics when qmd, SQLite, PATH, or Codex config is not ready
-- the same core flow on macOS, Linux, and Windows
+To check qmd and SQLite prerequisites:
 
-## Target Users
+```bash
+bun run src/cli.ts setup --install-prereqs
+```
 
-- Developers who use Codex or similar coding agents locally
-- Teams that want a shared qmd-backed memory pattern across machines
-- Future maintainers packaging the setup as a Bun global CLI
+That command may offer to install missing qmd or SQLite, but it defaults to `N` and requires explicit confirmation.
 
-A contributor should not need to know the history of the original manual setup discussion.
+## For AI Agents
 
-## Scope
+Fetch the installation guide and follow it step by step:
 
-The first production version should provide a CLI with these commands:
+```bash
+curl -fsSL https://raw.githubusercontent.com/Momentum96/agent-wiki/refs/heads/main/docs/guide/installation.md
+```
 
-| Command | Purpose |
-| --- | --- |
-| `agent-wiki doctor` | Inspect runtime, OS, qmd, PATH, SQLite, Codex home, and existing config without writing. |
-| `agent-wiki setup` | Create or repair the local agent wiki setup idempotently. |
-| `agent-wiki verify` | Run smoke checks and report whether the installed workflow works. |
-| `agent-wiki paths` | Print resolved paths for qmd, Codex home, wiki root, templates, and config files. |
+Rules for agents:
 
-`setup` should generate files from packaged templates instead of embedding long strings in installer logic.
+- Read this README and `docs/guide/installation.md` before running commands.
+- Check the current repository state with `git status --short`.
+- Do not install Bun, Node.js, Codex, Homebrew, apt packages, or winget packages without user approval.
+- You may run `agent-wiki setup --install-prereqs` or `bun run src/cli.ts setup --install-prereqs`; if qmd or SQLite is missing, ask the user before answering `y`.
+- Use `setup --dry-run` until full setup mutation is implemented.
+- Treat `verify` as reserved until it is implemented.
+- Report the exact commands run and their pass/fail result.
 
-## Supported Platforms
+Minimal local validation flow:
 
-Minimum supported platforms:
+```bash
+bun install
+bun run typecheck
+bun test
+bun run src/cli.ts paths --json
+bun run src/cli.ts doctor --json
+bun run src/cli.ts setup --dry-run --json
+```
 
-- macOS
-- Linux
-- Windows
+## What It Will Manage
 
-Windows support must distinguish native Windows from WSL because Codex, qmd, SQLite, and path handling may live in different environments.
+Default user-facing wiki content:
 
-## Required Behaviors
+- `$HOME/agent-wiki/context.md`
+- `$HOME/agent-wiki/templates/session-log.md`
+- `$HOME/agent-wiki/scripts/agent-wiki-log.sh`
+- `$HOME/agent-wiki/scripts/agent-wiki-refresh.sh`
 
-The setup flow must be idempotent. Running it twice should not duplicate config blocks, duplicate contexts, or corrupt existing files.
+Default internal state:
 
-At minimum, the installer must:
+- `$HOME/.agent-wiki`
 
-- require Node.js 22 or newer
-- prefer Bun for this package, while allowing qmd itself to be installed by Bun or npm
-- detect qmd with `command -v qmd` or the platform equivalent
-- create the agent wiki directory if missing
-- create initial wiki documents and session templates
-- register or repair the `agent-wiki` qmd collection
-- register qmd context for the collection
-- run `qmd update`
-- make `qmd embed` optional, because it can require model downloads and more time
-- add or update the Codex qmd MCP server config using a TOML-aware merge
-- add or update the global `AGENTS.md` instruction block using explicit markers
-- install required Codex skills from packaged templates
-- install helper scripts from packaged templates where the OS supports them
-- run a smoke search against the newly indexed wiki
-- produce a readable summary of changed, unchanged, skipped, and failed steps
+Default Codex targets:
 
-## Non-Goals For The First Version
+- `$CODEX_HOME/AGENTS.md`
+- `$CODEX_HOME/config.toml`
+- `$CODEX_HOME/skills/qmd-cli/SKILL.md`
+- `$CODEX_HOME/skills/agent-wiki-memory/SKILL.md`
 
-Do not implement these until the core setup is reliable:
+## Safety Model
 
-- cloud sync for wiki content
-- hosted MCP service
-- raw transcript ingestion
-- automatic secret scanning beyond simple local guardrails
-- automatic installation of Homebrew, apt packages, winget packages, or system SQLite
-- destructive rewrites of existing Codex config
-- automatic commits or repository publishing
-
-## Privacy Rules
+The installer must be idempotent. Re-running setup must not duplicate qmd collections, qmd contexts, skills, scripts, or global `AGENTS.md` blocks.
 
 The installer must never copy or package:
 
@@ -102,18 +128,20 @@ The installer must never copy or package:
 - raw chat transcripts
 - complete user-specific `config.toml` files
 
-Templates should contain generic setup content only.
+## Commands
 
-## Documentation Map
+| Command | Status | Purpose |
+| --- | --- | --- |
+| `agent-wiki paths` | implemented | Print resolved home, Codex, wiki, state, template, and skill paths. |
+| `agent-wiki doctor` | implemented | Inspect Bun, Node.js, qmd, SQLite, and Codex files without writing. |
+| `agent-wiki setup --install-prereqs` | implemented | Check qmd and SQLite and offer confirmed installation only for missing installable prerequisites. |
+| `agent-wiki setup --dry-run` | implemented | Copy packaged templates into a temporary target for inspection. |
+| `agent-wiki setup` | later milestone | Create or repair the full local agent wiki setup idempotently. |
+| `agent-wiki verify` | later milestone | Run qmd smoke checks against the installed workflow. |
 
-- [docs/PROJECT_BRIEF.md](docs/PROJECT_BRIEF.md): product goal, success criteria, and implementation boundaries.
-- [docs/INSTALLER_REQUIREMENTS.md](docs/INSTALLER_REQUIREMENTS.md): functional requirements for the future CLI.
-- [docs/GENERATED_ASSETS.md](docs/GENERATED_ASSETS.md): packaged files that `agent-wiki setup` should copy into the target environment.
-- `templates/skills/`: packaged skill templates that `agent-wiki setup` will copy into Codex skill locations.
-- `templates/scripts/`: packaged helper script templates that `agent-wiki setup` will install when applicable.
+## Documentation
 
-## Current Status
-
-This repository is currently a project brief and requirements scaffold. It is not yet an installable package.
-
-The next implementation step is to add a Bun/TypeScript CLI skeleton with `doctor`, `setup`, `verify`, and `paths` commands.
+- [docs/guide/installation.md](docs/guide/installation.md): step-by-step guide for AI agents and humans.
+- [docs/PROJECT_BRIEF.md](docs/PROJECT_BRIEF.md): product goal, success criteria, and boundaries.
+- [docs/INSTALLER_REQUIREMENTS.md](docs/INSTALLER_REQUIREMENTS.md): functional requirements.
+- [docs/GENERATED_ASSETS.md](docs/GENERATED_ASSETS.md): files that setup should copy from templates.
