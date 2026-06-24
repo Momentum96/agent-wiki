@@ -1,3 +1,4 @@
 .DS_Store
 .codegraph
 .omo/
+node_modules/

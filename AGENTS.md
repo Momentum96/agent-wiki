@@ -6,9 +6,9 @@
 
 ## OVERVIEW
 
-`agent-wiki` is a documentation and template scaffold for a future Bun-distributed CLI that installs a qmd-backed local agent memory workflow for Codex and compatible coding agents.
+`agent-wiki` is a Bun-distributed CLI scaffold that installs a qmd-backed local agent memory workflow for Codex and compatible coding agents.
 
-The current repository is not yet an installable package. There is no `package.json`, CLI source tree, or runtime entry point.
+The current repository has a first Bun/TypeScript CLI milestone. It is not yet a complete setup installer.
 
 ## STRUCTURE
 
@@ -16,6 +16,7 @@ The current repository is not yet an installable package. There is no `package.j
 agent-wiki/
 ├── README.md                       # product overview and command shape
 ├── docs/                           # requirements and implementation boundaries
+├── src/                            # Bun/TypeScript CLI source and tests
 └── templates/                      # packaged assets that setup will copy or merge
 ```
 
@@ -43,16 +44,15 @@ agent-wiki/
 - Do not copy secrets, `.env` contents, auth files, private keys, database dumps, qmd SQLite indexes, raw transcripts, or full user-specific Codex configs into this package or wiki logs.
 - Do not overwrite unmarked user config sections. Use marker-managed replacement only for the managed `AGENTS.md` block.
 - Do not add platform-specific helpers without a parser or syntax validation path for that platform.
-- Do not make setup install Homebrew, apt, winget, SQLite, or other system packages automatically.
+- Do not make setup install Bun, Node.js, Codex, Homebrew, apt, winget, SQLite, or other system packages without explicit confirmation.
 
 ## COMMANDS
-
-There is no project build or test command yet.
 
 Useful repository and qmd checks:
 
 ```bash
-find . -maxdepth 3 -type f -not -path '*/.git/*' | sort
+bun test
+bun run typecheck
 qmd --version
 qmd collection list
 qmd context list
@@ -64,7 +64,8 @@ Future target commands, once the CLI exists:
 ```bash
 bun install -g agent-wiki
 agent-wiki doctor
-agent-wiki setup
+agent-wiki setup --dry-run
+agent-wiki setup --install-prereqs
 agent-wiki verify
 agent-wiki paths
 ```

@@ -59,13 +59,14 @@ The first production-ready version is successful when:
 ### macOS
 
 - Support zsh users by default.
-- Detect Homebrew SQLite readiness but do not install it automatically.
+- Detect Homebrew SQLite readiness and ask before installing SQLite.
 - Use absolute paths in Codex MCP config.
 
 ### Linux
 
 - Support common shells without requiring shell profile edits during setup.
 - Detect common SQLite package gaps and print distro-specific guidance.
+- Ask before running SQLite package-manager commands.
 - Work in normal home-directory installs and container-like environments.
 
 ### Windows
@@ -79,7 +80,7 @@ The first production-ready version is successful when:
 
 ```text
 agent-wiki doctor [--json]
-agent-wiki setup [--wiki-dir <path>] [--codex-home <path>] [--skip-embed] [--dry-run] [--json]
+agent-wiki setup [--wiki-dir <path>] [--codex-home <path>] [--skip-embed] [--dry-run] [--install-prereqs] [--yes] [--no-install] [--json]
 agent-wiki verify [--json]
 agent-wiki paths [--json]
 ```
@@ -92,6 +93,7 @@ Default targets:
 - `$HOME/agent-wiki/templates/session-log.md`
 - `$HOME/agent-wiki/scripts/agent-wiki-log.sh`
 - `$HOME/agent-wiki/scripts/agent-wiki-refresh.sh`
+- `$HOME/.agent-wiki/`
 - `$CODEX_HOME/AGENTS.md`
 - `$CODEX_HOME/config.toml`
 - `$CODEX_HOME/skills/qmd-cli/SKILL.md`
@@ -105,4 +107,3 @@ The implementation must allow target paths to be overridden by CLI flags or envi
 - Whether the package should publish under a scope.
 - Whether Windows should install `.ps1` helper scripts in addition to POSIX shell scripts, after PowerShell parser validation is available.
 - Whether to vendor qmd skill content exactly from `qmd skills get qmd --full` or keep a project-maintained `qmd-cli` template.
-- Whether `setup` should offer an interactive confirmation mode or stay non-interactive by default.

@@ -7,7 +7,9 @@
 - qmd CLI available before setup can fully pass.
 - SQLite available to qmd.
 
-The installer may print package-manager commands for missing dependencies, but it must not install system packages automatically.
+The installer must not install Bun, Node.js, or Codex. Missing runtime or agent-host tools should be reported with clear diagnostics.
+
+If qmd or SQLite is missing, setup may offer an install command, but only after showing the exact command and receiving an explicit `y` confirmation. The default answer is `N`. Non-interactive JSON mode must not install anything unless an explicit install flag such as `--yes` is provided.
 
 ## Path Resolution
 
@@ -16,11 +18,14 @@ The installer must resolve:
 - `HOME`
 - `CODEX_HOME`, defaulting to `$HOME/.codex`
 - `AGENT_WIKI_DIR`, defaulting to `$HOME/agent-wiki`
+- `AGENT_WIKI_STATE_DIR`, defaulting to `$HOME/.agent-wiki`
 - qmd executable path
 - package template directory
 - target skill directories
 
 The resolved paths must be visible through `agent-wiki paths`.
+
+`AGENT_WIKI_DIR` is the visible markdown wiki root that users can edit and search. `AGENT_WIKI_STATE_DIR` is reserved for internal machine-local state, cache metadata, and future installer bookkeeping.
 
 Do not rely on `npm bin -g`; it is not available in all npm versions. Prefer direct executable detection and package-manager-specific fallbacks.
 
@@ -72,6 +77,7 @@ Rules:
 The installer must:
 
 - check `qmd --version`
+- check `sqlite3 --version`
 - check `qmd collection list`
 - use `qmd collection show agent-wiki` before adding
 - add the collection only if missing
@@ -81,6 +87,29 @@ The installer must:
 - verify search with `qmd search "Agent Wiki Context" --collection agent-wiki --format files`
 
 If embedding fails after `qmd update` succeeds, setup can be considered partially functional. `verify` must report semantic search as degraded rather than treating the whole install as absent.
+
+## Prerequisite Install Rules
+
+`setup --install-prereqs` may install only:
+
+- qmd, using `bun install --global qmd`
+- SQLite, using the platform-specific package manager hint for the current OS
+
+It must not install:
+
+- Bun
+- Node.js
+- Codex
+- Homebrew itself
+
+Rules:
+
+- show the exact command before installing
+- ask `y/N` for each missing installable prerequisite
+- treat empty input as no
+- support `--no-install` for diagnostics only
+- support `--yes` for explicit non-interactive confirmation
+- stop before config mutation if qmd or SQLite remains unavailable
 
 ## Template Rules
 
@@ -129,6 +158,8 @@ At minimum, the implementation should eventually be tested with:
 | Existing Codex config | qmd MCP block is merged without deleting other config. |
 | Missing qmd | `doctor` reports missing qmd and setup stops before config mutation. |
 | Missing SQLite support | `doctor` reports likely SQLite remediation. |
+| Missing qmd with default prompt | Setup shows the qmd install command and skips installation on empty or `n` input. |
+| Missing qmd with explicit yes | Setup runs only the qmd install command and reports the result. |
 | Windows native | Paths and command hints are Windows-safe. |
 | WSL | Paths do not cross native Windows and WSL environments. |
 
@@ -139,7 +170,8 @@ The first code milestone should only implement:
 1. Bun TypeScript CLI skeleton.
 2. `paths` command.
 3. `doctor` command with no writes.
-4. Template files copied into a temporary dry-run target.
-5. Unit tests for path resolution and marker-block replacement.
+4. `setup --install-prereqs` for qmd and SQLite only.
+5. Template files copied into a temporary dry-run target.
+6. Unit tests for path resolution, prerequisite planning, and marker-block replacement.
 
 Do not implement real Codex config mutation until dry-run and backup behavior are tested.

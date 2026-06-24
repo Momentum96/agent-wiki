@@ -1,0 +1,17 @@
+{
+  "name": "agent-wiki",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "agent-wiki": "./src/cli.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "cli": "bun run src/cli.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.9.0"
+  }
+}
