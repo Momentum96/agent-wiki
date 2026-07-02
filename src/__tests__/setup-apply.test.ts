@@ -135,6 +135,55 @@ describe("runSetup", () => {
     expect(agents).toContain("Existing instructions")
     expect(agents.match(/agent-wiki:start/g)?.length).toBe(1)
   })
+
+  test("Given legacy installed agent wiki assets When setup runs Then it removes them", async () => {
+    const root = await mkdtemp(join(tmpdir(), "agent-wiki-setup-legacy-"))
+    const paths = testPaths(root)
+    const legacySkillDir = join(paths.skillsDir, "agent-wiki-memory")
+    await mkdir(join(legacySkillDir, "scripts"), { recursive: true })
+    await mkdir(join(legacySkillDir, "references"), { recursive: true })
+    await mkdir(join(legacySkillDir, "templates"), { recursive: true })
+    await mkdir(paths.codexHome, { recursive: true })
+    await writeFile(join(legacySkillDir, "scripts/agent-wiki-refresh.sh"), "WIKI_ROOT=\"$HOME/agent-wiki\"\n")
+    await writeFile(join(legacySkillDir, "scripts/agent-wiki-log.sh"), "AGENT_WIKI_ROOT=\"$HOME/agent-wiki\"\n")
+    await writeFile(join(legacySkillDir, "references/wiki-schema.md"), "Changed files must use absolute paths\n")
+    await writeFile(join(legacySkillDir, "templates/session-log.md"), "legacy template\n")
+    await writeFile(
+      join(paths.codexHome, "AGENTS.md"),
+      [
+        "Existing instructions",
+        "",
+        "## Agent Wiki Memory",
+        "",
+        "Before any non-trivial task, load and follow the `agent-wiki-memory` skill.",
+        "",
+        "- Check the qmd-backed wiki before planning or editing.",
+        "- Use qmd as the required retrieval and indexing layer.",
+        "- After meaningful work, record the summary, decisions, verification, and changed files in the wiki log.",
+        "- If qmd or the skill is unavailable, state that clearly before proceeding.",
+        "",
+      ].join("\n"),
+    )
+
+    const report = await runSetup({
+      paths,
+      skipEmbed: true,
+      commandRunner: async (command, args) => qmdAlreadyConfigured(command, args),
+    })
+
+    expect(report.failed).toEqual([])
+    expect(report.changed).toContain("legacy:agent-wiki-memory/scripts/agent-wiki-refresh.sh")
+    await expect(stat(join(legacySkillDir, "scripts/agent-wiki-refresh.sh"))).rejects.toThrow()
+    await expect(stat(join(legacySkillDir, "scripts/agent-wiki-log.sh"))).rejects.toThrow()
+    await expect(stat(join(legacySkillDir, "references/wiki-schema.md"))).rejects.toThrow()
+    await expect(stat(join(legacySkillDir, "templates/session-log.md"))).rejects.toThrow()
+
+    const agents = await readFile(join(paths.codexHome, "AGENTS.md"), "utf8")
+    expect(agents).toContain("Existing instructions")
+    expect(agents.match(/## Agent Wiki Memory/g)?.length).toBe(1)
+    expect(agents).not.toContain("After meaningful work, record the summary")
+    expect(agents).toContain("Search project memory first; it is the default workflow.")
+  })
 })
 
 function testPaths(root: string) {

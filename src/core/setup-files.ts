@@ -1,4 +1,4 @@
-import { mkdir } from "node:fs/promises"
+import { mkdir, rm, rmdir, stat } from "node:fs/promises"
 import { join } from "node:path"
 
 import type { ResolvedPaths } from "./paths"
@@ -15,6 +15,19 @@ const FILE_TARGETS = [
 const SKILL_TARGETS = [
   ["skills/qmd-cli/SKILL.md", "qmd-cli/SKILL.md", "skill:qmd-cli"],
   ["skills/agent-wiki-memory/SKILL.md", "agent-wiki-memory/SKILL.md", "skill:agent-wiki-memory"],
+] as const
+
+const LEGACY_AGENT_WIKI_MEMORY_FILES = [
+  "agent-wiki-memory/scripts/agent-wiki-refresh.sh",
+  "agent-wiki-memory/scripts/agent-wiki-log.sh",
+  "agent-wiki-memory/references/wiki-schema.md",
+  "agent-wiki-memory/templates/session-log.md",
+] as const
+
+const LEGACY_AGENT_WIKI_MEMORY_DIRS = [
+  "agent-wiki-memory/scripts",
+  "agent-wiki-memory/references",
+  "agent-wiki-memory/templates",
 ] as const
 
 export async function installTemplateFiles(input: {
@@ -40,5 +53,35 @@ export async function installTemplateFiles(input: {
       targetPath: join(input.paths.skillsDir, target),
     })
     input.report[status].push(label)
+  }
+
+  await removeLegacyAgentWikiMemoryAssets(input.paths, input.report)
+}
+
+async function removeLegacyAgentWikiMemoryAssets(
+  paths: ResolvedPaths,
+  report: MutableSetupReport,
+): Promise<void> {
+  for (const relativePath of LEGACY_AGENT_WIKI_MEMORY_FILES) {
+    const path = join(paths.skillsDir, relativePath)
+    if (!(await exists(path))) continue
+    await rm(path)
+    report.changed.push(`legacy:${relativePath}`)
+  }
+
+  for (const relativePath of LEGACY_AGENT_WIKI_MEMORY_DIRS) {
+    try {
+      await rmdir(join(paths.skillsDir, relativePath))
+    } catch {
+    }
+  }
+}
+
+async function exists(path: string): Promise<boolean> {
+  try {
+    await stat(path)
+    return true
+  } catch {
+    return false
   }
 }

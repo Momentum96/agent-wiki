@@ -7,6 +7,9 @@ import type { MutableSetupReport } from "./setup-report"
 import { backupIfExists, writeIfChanged } from "./file-state"
 
 const QMD_SECTION = "[mcp_servers.qmd]"
+const AGENT_WIKI_START_MARKER = "<!-- agent-wiki:start -->"
+const LEGACY_AGENT_WIKI_BLOCK =
+  /(?:^|\n)## Agent Wiki Memory\n\nBefore any non-trivial task, load and follow the `agent-wiki-memory` skill\.\n\n(?:- [^\n]*\n)+(?:\n)?/u
 
 export async function installCodexFiles(input: {
   readonly paths: ResolvedPaths
@@ -64,7 +67,8 @@ async function installAgents(input: {
   const path = join(input.paths.codexHome, "AGENTS.md")
   const block = await readFile(join(input.paths.templateDir, "agents/AGENTS.agent-wiki-block.md"), "utf8")
   const existing = await readText(path)
-  const next = applyManagedBlock(existing, block)
+  const cleaned = removeLegacyAgentWikiBlock(existing)
+  const next = applyManagedBlock(cleaned, block)
   if (!next.ok) {
     input.report.failed.push(`codex:AGENTS.md:${next.error.message}`)
     return
@@ -75,6 +79,16 @@ async function installAgents(input: {
   }
   const status = await writeIfChanged(path, next.value)
   input.report[status].push("codex:AGENTS.md")
+}
+
+export function removeLegacyAgentWikiBlock(content: string): string {
+  const markerIndex = content.indexOf(AGENT_WIKI_START_MARKER)
+  if (markerIndex === -1) return removeLegacyAgentWikiBlockFromSegment(content)
+  return `${removeLegacyAgentWikiBlockFromSegment(content.slice(0, markerIndex))}${content.slice(markerIndex)}`
+}
+
+function removeLegacyAgentWikiBlockFromSegment(content: string): string {
+  return content.replace(LEGACY_AGENT_WIKI_BLOCK, (match) => (match.startsWith("\n") ? "\n" : ""))
 }
 
 async function readText(path: string): Promise<string> {
