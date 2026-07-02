@@ -29,6 +29,26 @@ Before non-trivial planning or editing:
 5. Retrieve only relevant files with `qmd get` or `qmd multi-get`.
 6. If qmd or the expected wiki collection is unavailable, state that clearly before proceeding.
 
+## Setup Request Routine
+
+When the user asks to use, enable, install, set up, or initialize agent-wiki for the current project:
+
+1. Treat project-local memory as the default. Do not add `--project`; it is already the default.
+2. Find the current repository root with `git rev-parse --show-toplevel`. Run setup from that root.
+3. Locate the agent-wiki CLI. Prefer an existing checkout at `$HOME/mac_work/agent-wiki/src/cli.ts`; otherwise use the checked-out agent-wiki repository or the installed `agent-wiki` executable if available.
+4. Run safe checks first:
+   - `bun run <agent-wiki-cli> paths --json`
+   - `bun run <agent-wiki-cli> doctor --json`
+   - `bun run <agent-wiki-cli> setup --dry-run --json`
+5. If Bun, Node.js, or Codex is missing, stop and ask the user. Do not install them automatically.
+6. If qmd or SQLite is missing, show the exact prerequisite command and ask before installing.
+7. Apply project setup:
+   - `bun run <agent-wiki-cli> setup --skip-embed --json`
+   - `bun run <agent-wiki-cli> verify --json`
+8. Confirm that the resolved wiki root is `<repo>/docs/agent-wiki`, the local state dir is `<repo>/.agent-wiki/local`, and the collection is `agent-wiki-<repo-slug>`.
+9. Treat `docs/agent-wiki` files as project-shareable. Treat `.agent-wiki/local` as local-only.
+10. Report commands, pass/fail results, changed files, and any Codex backups.
+
 ## During-Work Routine
 
 Track durable work memory only:
