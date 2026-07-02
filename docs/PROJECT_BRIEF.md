@@ -80,26 +80,37 @@ The first production-ready version is successful when:
 
 ```text
 agent-wiki doctor [--json]
-agent-wiki setup [--wiki-dir <path>] [--codex-home <path>] [--skip-embed] [--dry-run] [--install-prereqs] [--yes] [--no-install] [--json]
-agent-wiki verify [--json]
-agent-wiki paths [--json]
+agent-wiki setup [--project|--global] [--collection <name>] [--wiki-dir <path>] [--codex-home <path>] [--skip-embed] [--dry-run] [--install-prereqs] [--yes] [--no-install] [--json]
+agent-wiki verify [--project|--global] [--collection <name>] [--json]
+agent-wiki paths [--project|--global] [--collection <name>] [--json]
 ```
 
 ## Files The Installer Should Manage
 
-Default targets:
+Default project-local targets:
+
+- `<repo>/docs/agent-wiki/context.md`
+- `<repo>/docs/agent-wiki/templates/session-log.md`
+- `<repo>/docs/agent-wiki/scripts/agent-wiki-log.sh`
+- `<repo>/docs/agent-wiki/scripts/agent-wiki-refresh.sh`
+- `<repo>/.agent-wiki/local/`
+
+Global/private targets when `--global` or `AGENT_WIKI_SCOPE=global` is used:
 
 - `$HOME/agent-wiki/context.md`
 - `$HOME/agent-wiki/templates/session-log.md`
 - `$HOME/agent-wiki/scripts/agent-wiki-log.sh`
 - `$HOME/agent-wiki/scripts/agent-wiki-refresh.sh`
 - `$HOME/.agent-wiki/`
+
+Project collections default to `agent-wiki-<repo-slug>`. Global/private memory keeps the `agent-wiki` collection.
+
 - `$CODEX_HOME/AGENTS.md`
 - `$CODEX_HOME/config.toml`
 - `$CODEX_HOME/skills/qmd-cli/SKILL.md`
 - `$CODEX_HOME/skills/agent-wiki-memory/SKILL.md`
 
-The implementation must allow target paths to be overridden by CLI flags or environment variables.
+The implementation must allow target paths and collection names to be overridden by CLI flags or environment variables.
 
 ## Open Decisions
 

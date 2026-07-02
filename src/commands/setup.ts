@@ -87,14 +87,19 @@ function resolveSetupPaths(args: readonly string[]) {
   const current = resolveCurrentPaths()
   const wikiDir = valueAfter(args, "--wiki-dir")
   const codexHome = valueAfter(args, "--codex-home")
-  if (wikiDir === undefined && codexHome === undefined) return current
+  const collectionName = valueAfter(args, "--collection")
+  const project = args.includes("--project")
+  const global = args.includes("--global")
+  if (wikiDir === undefined && codexHome === undefined && collectionName === undefined && !project && !global) return current
   if (!current.ok) return current
 
   return resolvePaths({
     env: {
       ...process.env,
-      AGENT_WIKI_DIR: wikiDir ?? current.value.agentWikiDir,
-      CODEX_HOME: codexHome ?? current.value.codexHome,
+      AGENT_WIKI_SCOPE: scopeFromArgs(args),
+      AGENT_WIKI_DIR: wikiDir ?? process.env["AGENT_WIKI_DIR"],
+      CODEX_HOME: codexHome ?? process.env["CODEX_HOME"],
+      AGENT_WIKI_COLLECTION: collectionName ?? process.env["AGENT_WIKI_COLLECTION"],
     },
     platform: {
       os: platform(),
@@ -102,6 +107,12 @@ function resolveSetupPaths(args: readonly string[]) {
     },
     cwd: process.cwd(),
   })
+}
+
+function scopeFromArgs(args: readonly string[]): string | undefined {
+  if (args.includes("--global")) return "global"
+  if (args.includes("--project")) return "project"
+  return process.env["AGENT_WIKI_SCOPE"]
 }
 
 export async function runPrerequisiteInstall(input: {

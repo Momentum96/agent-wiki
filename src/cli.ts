@@ -1,20 +1,22 @@
 #!/usr/bin/env bun
+import { platform, release } from "node:os"
+
 import { runCurrentDoctor } from "./commands/doctor"
 import { handlePaths } from "./commands/paths"
 import { handleSetup } from "./commands/setup"
 import { runVerify } from "./core/verify"
-import { resolveCurrentPaths } from "./core/paths"
+import { resolveCurrentPaths, resolvePaths } from "./core/paths"
 import { printJson } from "./core/report"
 
 const USAGE = `Usage: agent-wiki <command> [options]
 
 Commands:
-  paths [--json]
+  paths [--project|--global] [--collection <name>] [--json]
   doctor [--json]
   setup --dry-run [--target <dir>] [--json]
-  setup [--wiki-dir <dir>] [--codex-home <dir>] [--skip-embed] [--json]
+  setup [--project|--global] [--collection <name>] [--wiki-dir <dir>] [--codex-home <dir>] [--skip-embed] [--json]
   setup --install-prereqs [--yes|--no-install] [--dry-run] [--json]
-  verify [--json]
+  verify [--project|--global] [--collection <name>] [--json]
 `
 
 export async function main(args: readonly string[]): Promise<number> {
@@ -44,7 +46,13 @@ export async function main(args: readonly string[]): Promise<number> {
 
 async function handleVerify(args: readonly string[]): Promise<number> {
   const json = args.includes("--json")
-  const report = await runVerify({})
+  const paths = resolveVerifyPaths(args)
+  if (!paths.ok) {
+    if (json) printJson({ error: paths.error.message })
+    else console.error(paths.error.message)
+    return 1
+  }
+  const report = await runVerify({ collectionName: paths.value.collectionName })
   if (json) printJson(report)
   else {
     for (const check of report.checks) {
@@ -52,6 +60,26 @@ async function handleVerify(args: readonly string[]): Promise<number> {
     }
   }
   return report.ok ? 0 : 1
+}
+
+function resolveVerifyPaths(args: readonly string[]) {
+  if (!args.includes("--project") && !args.includes("--global") && !args.includes("--collection")) return resolveCurrentPaths()
+  const collectionName = valueAfter(args, "--collection")
+  return resolvePaths({
+    env: {
+      ...process.env,
+      AGENT_WIKI_SCOPE: scopeFromArgs(args),
+      AGENT_WIKI_COLLECTION: collectionName ?? process.env["AGENT_WIKI_COLLECTION"],
+    },
+    platform: { os: platform(), release: release() },
+    cwd: process.cwd(),
+  })
+}
+
+function scopeFromArgs(args: readonly string[]): string | undefined {
+  if (args.includes("--global")) return "global"
+  if (args.includes("--project")) return "project"
+  return process.env["AGENT_WIKI_SCOPE"]
 }
 
 async function handleDoctor(args: readonly string[]): Promise<number> {
@@ -71,6 +99,14 @@ async function handleDoctor(args: readonly string[]): Promise<number> {
     }
   }
   return 0
+}
+
+function valueAfter(args: readonly string[], flag: string): string | undefined {
+  const index = args.indexOf(flag)
+  if (index < 0) return undefined
+  const value = args[index + 1]
+  if (value === undefined || value.length === 0) return undefined
+  return value
 }
 
 if (import.meta.main) {

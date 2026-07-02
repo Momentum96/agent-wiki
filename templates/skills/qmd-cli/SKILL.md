@@ -30,21 +30,24 @@ qmd context list
 ## Agent Wiki Setup
 
 ```bash
-qmd collection show agent-wiki
-qmd collection add "$AGENT_WIKI_DIR" --name agent-wiki --mask "**/*.md"
-qmd context add qmd://agent-wiki "Shared agent wiki for coding agents"
+qmd collection show "$AGENT_WIKI_COLLECTION"
+qmd collection add "$AGENT_WIKI_DIR" --name "$AGENT_WIKI_COLLECTION" --mask "**/*.md"
+qmd context add "qmd://$AGENT_WIKI_COLLECTION" "Shared project agent wiki for coding agents"
 qmd update
-qmd embed -c agent-wiki
+qmd embed -c "$AGENT_WIKI_COLLECTION"
 ```
+
+For repo-local project memory, `AGENT_WIKI_COLLECTION` is usually `agent-wiki-<repo-slug>` and should be searched before the global collection.
+For global/private memory, `AGENT_WIKI_COLLECTION` is usually `agent-wiki`.
 
 `qmd embed` can be slow or require model downloads. If `qmd update` succeeds but embedding fails, keyword search can still work; report semantic search as degraded instead of treating the whole setup as missing.
 
 ## Search Workflow
 
 ```bash
-qmd search "exact error or filename" --collection agent-wiki --format files -n 8
-qmd query "how do we handle this topic?" --collection agent-wiki --format files -n 8
-qmd get "qmd://agent-wiki/path/to/file.md"
+qmd search "exact error or filename" --collection "$AGENT_WIKI_COLLECTION" --format files -n 8
+qmd query "how do we handle this topic?" --collection "$AGENT_WIKI_COLLECTION" --format files -n 8
+qmd get "qmd://$AGENT_WIKI_COLLECTION/path/to/file.md"
 qmd multi-get "sessions/YYYY-MM-DD/*.md" --max-bytes 20480
 ```
 

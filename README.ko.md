@@ -92,6 +92,7 @@ bun install
 bun run typecheck
 bun test
 bun run src/cli.ts paths --json
+bun run src/cli.ts paths --global --json
 bun run src/cli.ts doctor --json
 bun run src/cli.ts setup --dry-run --json
 bun run src/cli.ts setup --skip-embed --json
@@ -100,14 +101,27 @@ bun run src/cli.ts verify --json
 
 ## 관리 대상
 
-기본 사용자-facing wiki content:
+기본 project-local wiki content:
+
+- `<repo>/docs/agent-wiki/context.md`
+- `<repo>/docs/agent-wiki/templates/session-log.md`
+- `<repo>/docs/agent-wiki/scripts/agent-wiki-log.sh`
+- `<repo>/docs/agent-wiki/scripts/agent-wiki-refresh.sh`
+
+기본 project-local 내부 상태 경로:
+
+- `<repo>/.agent-wiki/local`
+
+project collection은 기본적으로 `agent-wiki-<repo-slug>`를 사용하며, global/private `agent-wiki` collection보다 먼저 검색해야 합니다.
+
+`--global` 또는 `AGENT_WIKI_SCOPE=global`을 사용할 때의 global/private wiki content:
 
 - `$HOME/agent-wiki/context.md`
 - `$HOME/agent-wiki/templates/session-log.md`
 - `$HOME/agent-wiki/scripts/agent-wiki-log.sh`
 - `$HOME/agent-wiki/scripts/agent-wiki-refresh.sh`
 
-기본 내부 상태 경로:
+global/private 내부 상태 경로:
 
 - `$HOME/.agent-wiki`
 
@@ -137,12 +151,12 @@ installer가 절대 복사하거나 패키징하면 안 되는 것:
 
 | Command | 상태 | 목적 |
 | --- | --- | --- |
-| `agent-wiki paths` | 구현됨 | home, Codex, wiki, state, template, skill 경로 출력 |
+| `agent-wiki paths` | 구현됨 | home, Codex, wiki, state, collection, template, skill 경로 출력 |
 | `agent-wiki doctor` | 구현됨 | Bun, Node.js, qmd, SQLite, Codex 파일을 쓰기 없이 점검 |
 | `agent-wiki setup --install-prereqs` | 구현됨 | qmd와 SQLite를 확인하고, 빠진 항목만 승인 후 설치 제안 |
 | `agent-wiki setup --dry-run` | 구현됨 | packaged template을 임시 대상에 복사해 검사 |
-| `agent-wiki setup` | 구현됨 | 전체 로컬 agent wiki setup 생성/복구 |
-| `agent-wiki verify` | 구현됨 | 설치된 workflow에 대해 qmd smoke check 실행 |
+| `agent-wiki setup` | 구현됨 | 전체 로컬 agent wiki setup 생성/복구. 기본은 repo-local memory이며 global/private memory는 `--global` 사용 |
+| `agent-wiki verify` | 구현됨 | 설치된 workflow에 대해 qmd smoke check 실행. 기본은 project collection이며 global/private collection은 `--global` 사용 |
 
 ## 문서
 

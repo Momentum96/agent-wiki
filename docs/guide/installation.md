@@ -46,12 +46,15 @@ This installs project development dependencies from `package.json`.
 bun run typecheck
 bun test
 bun run src/cli.ts paths --json
+bun run src/cli.ts paths --global --json
 bun run src/cli.ts doctor --json
 ```
 
 Expected current behavior:
 
-- `paths --json` includes `agentWikiDir` and `stateDir`
+- `paths --json` includes `agentWikiDir`, `stateDir`, and `collectionName`
+- `paths --json` resolves repo-local memory under `docs/agent-wiki` with a project collection by default
+- `paths --global --json` resolves the optional global/private wiki under `$HOME/agent-wiki`
 - `doctor --json` checks Bun, Node.js, qmd, SQLite, Codex home, Codex config, and Codex `AGENTS.md`
 - missing qmd or SQLite may include an `installCandidate`
 
@@ -86,6 +89,8 @@ bun run src/cli.ts setup --dry-run --json
 
 This copies packaged templates into a temporary directory. It must not modify Codex config, qmd collections, global `AGENTS.md`, or the user's real wiki directory.
 
+Repo-local memory is the default. Use `--global` only when inspecting the optional global/private memory setup.
+
 ## Step 7: Apply Setup
 
 After the user confirms they want to modify the local Codex/qmd setup, run:
@@ -96,17 +101,21 @@ bun run src/cli.ts setup --skip-embed --json
 
 `--skip-embed` keeps setup fast and avoids model-download side effects. Omit it only if the user explicitly wants fresh vector embeddings.
 
+Project-local memory is the default. Use `--global` only when the user explicitly wants global/private memory.
+
 ## Step 8: Verify
 
 ```bash
 bun run src/cli.ts verify --json
 ```
 
+Project-local memory is the default. Use `--global` only to verify the optional global/private memory collection.
+
 Expected behavior:
 
 - qmd is available
-- `agent-wiki` collection exists
-- qmd context includes `agent-wiki`
+- project collection exists, usually `agent-wiki-<repo-slug>`
+- qmd context includes the project collection
 - `qmd update` succeeds
 - keyword smoke search for `Agent Wiki Context` succeeds
 

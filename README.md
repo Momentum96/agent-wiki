@@ -92,6 +92,7 @@ bun install
 bun run typecheck
 bun test
 bun run src/cli.ts paths --json
+bun run src/cli.ts paths --global --json
 bun run src/cli.ts doctor --json
 bun run src/cli.ts setup --dry-run --json
 bun run src/cli.ts setup --skip-embed --json
@@ -100,14 +101,27 @@ bun run src/cli.ts verify --json
 
 ## What It Will Manage
 
-Default user-facing wiki content:
+Default project-local wiki content:
+
+- `<repo>/docs/agent-wiki/context.md`
+- `<repo>/docs/agent-wiki/templates/session-log.md`
+- `<repo>/docs/agent-wiki/scripts/agent-wiki-log.sh`
+- `<repo>/docs/agent-wiki/scripts/agent-wiki-refresh.sh`
+
+Default project-local internal state:
+
+- `<repo>/.agent-wiki/local`
+
+Project collections default to `agent-wiki-<repo-slug>` and should be searched before the global/private `agent-wiki` collection.
+
+Global/private wiki content when `--global` or `AGENT_WIKI_SCOPE=global` is used:
 
 - `$HOME/agent-wiki/context.md`
 - `$HOME/agent-wiki/templates/session-log.md`
 - `$HOME/agent-wiki/scripts/agent-wiki-log.sh`
 - `$HOME/agent-wiki/scripts/agent-wiki-refresh.sh`
 
-Default internal state:
+Global/private internal state:
 
 - `$HOME/.agent-wiki`
 
@@ -137,12 +151,12 @@ The installer must never copy or package:
 
 | Command | Status | Purpose |
 | --- | --- | --- |
-| `agent-wiki paths` | implemented | Print resolved home, Codex, wiki, state, template, and skill paths. |
+| `agent-wiki paths` | implemented | Print resolved home, Codex, wiki, state, collection, template, and skill paths. |
 | `agent-wiki doctor` | implemented | Inspect Bun, Node.js, qmd, SQLite, and Codex files without writing. |
 | `agent-wiki setup --install-prereqs` | implemented | Check qmd and SQLite and offer confirmed installation only for missing installable prerequisites. |
 | `agent-wiki setup --dry-run` | implemented | Copy packaged templates into a temporary target for inspection. |
-| `agent-wiki setup` | implemented | Create or repair the full local agent wiki setup idempotently. |
-| `agent-wiki verify` | implemented | Run qmd smoke checks against the installed workflow. |
+| `agent-wiki setup` | implemented | Create or repair the full local agent wiki setup idempotently. Repo-local memory is the default; use `--global` for global/private memory. |
+| `agent-wiki verify` | implemented | Run qmd smoke checks against the installed workflow. Project collections are the default; use `--global` for the global/private collection. |
 
 ## Documentation
 

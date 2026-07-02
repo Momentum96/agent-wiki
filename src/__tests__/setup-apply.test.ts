@@ -47,6 +47,63 @@ describe("runSetup", () => {
     await expect(stat(join(paths.codexHome, "skills/qmd-cli/SKILL.md"))).resolves.toBeDefined()
   })
 
+  test("Given project-scoped target paths When setup runs Then it configures a project collection", async () => {
+    const root = await mkdtemp(join(tmpdir(), "agent-wiki-setup-project-"))
+    const paths = {
+      ...testPaths(root),
+      agentWikiDir: join(root, "repo/docs/agent-wiki"),
+      stateDir: join(root, "repo/.agent-wiki/local"),
+      collectionName: "agent-wiki-repo",
+    }
+    const commands: string[] = []
+
+    const report = await runSetup({
+      paths,
+      skipEmbed: true,
+      commandRunner: async (command, args) => {
+        commands.push([command, ...args].join(" "))
+        if (command === "which") return { exitCode: 0, stdout: "/opt/bin/qmd\n", stderr: "" }
+        if (command === "qmd" && args[0] === "collection" && args[1] === "show") {
+          return { exitCode: 1, stdout: "", stderr: "missing" }
+        }
+        if (command === "qmd" && args[0] === "context" && args[1] === "list") {
+          return { exitCode: 0, stdout: "", stderr: "" }
+        }
+        return { exitCode: 0, stdout: "ok", stderr: "" }
+      },
+    })
+
+    expect(report.failed).toEqual([])
+    expect(commands).toContain(`qmd collection add ${paths.agentWikiDir} --name agent-wiki-repo --mask **/*.md`)
+    expect(commands).toContain("qmd context add qmd://agent-wiki-repo Shared project agent wiki for coding agents. Stores repo-local summaries, decisions, verification notes, and changed-file manifests. Use repo-relative paths for shareable project facts.")
+    expect(commands).toContain("qmd search Agent Wiki Context --collection agent-wiki-repo --format files")
+  })
+
+  test("Given only a similarly named context exists When setup runs Then it adds the exact project context", async () => {
+    const root = await mkdtemp(join(tmpdir(), "agent-wiki-setup-context-"))
+    const paths = {
+      ...testPaths(root),
+      collectionName: "agent-wiki-repo",
+    }
+    const commands: string[] = []
+
+    const report = await runSetup({
+      paths,
+      skipEmbed: true,
+      commandRunner: async (command, args) => {
+        commands.push([command, ...args].join(" "))
+        if (command === "which") return { exitCode: 0, stdout: "/opt/bin/qmd\n", stderr: "" }
+        if (command === "qmd" && args[0] === "context" && args[1] === "list") {
+          return { exitCode: 0, stdout: "agent-wiki-repository\n", stderr: "" }
+        }
+        return { exitCode: 0, stdout: "ok", stderr: "" }
+      },
+    })
+
+    expect(report.failed).toEqual([])
+    expect(commands).toContain("qmd context add qmd://agent-wiki-repo Shared project agent wiki for coding agents. Stores repo-local summaries, decisions, verification notes, and changed-file manifests. Use repo-relative paths for shareable project facts.")
+  })
+
   test("Given existing managed files When setup reruns Then it preserves unrelated content and reports unchanged files", async () => {
     const root = await mkdtemp(join(tmpdir(), "agent-wiki-setup-existing-"))
     const paths = testPaths(root)
@@ -86,6 +143,7 @@ function testPaths(root: string) {
     codexHome: join(root, ".codex"),
     agentWikiDir: join(root, "agent-wiki"),
     stateDir: join(root, ".agent-wiki"),
+    collectionName: "agent-wiki",
     templateDir: join(process.cwd(), "templates"),
     skillsDir: join(root, ".codex/skills"),
     platform: { kind: "darwin", isWsl: false } as const,

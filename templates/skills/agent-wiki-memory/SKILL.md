@@ -5,12 +5,16 @@ description: Use when qmd-backed wiki memory, work logs, changed-file manifests,
 
 # Agent Wiki Memory
 
-Use this skill to keep local coding-agent behavior consistent through a shared qmd-backed markdown wiki.
+Use this skill to keep coding-agent behavior consistent through qmd-backed markdown wikis.
+
+Use project memory by default. Use global memory only as a personal/local fallback.
 
 ## Required Variables
 
-- Wiki root: `$AGENT_WIKI_DIR`, default `$HOME/agent-wiki`
-- qmd collection: `agent-wiki`
+- Project wiki root: `$AGENT_WIKI_DIR`, usually `<repo>/docs/agent-wiki`
+- Project qmd collection: `$AGENT_WIKI_COLLECTION`, usually `agent-wiki-<repo-slug>`
+- Global/private wiki root: `$HOME/agent-wiki`
+- Global/private qmd collection: `agent-wiki`
 
 ## Start Routine
 
@@ -18,33 +22,36 @@ Before non-trivial planning or editing:
 
 1. Check qmd availability with `qmd --version`.
 2. Check wiki state with `qmd collection list` and `qmd context list`.
-3. Search before loading documents:
-   - Use `qmd query "<task topic>" --collection agent-wiki --format files` for natural-language tasks.
-   - Use `qmd search "<exact token>" --collection agent-wiki --format files` for filenames, errors, or exact phrases.
-4. Retrieve only relevant files with `qmd get` or `qmd multi-get`.
-5. If qmd or the wiki collection is unavailable, state that clearly before proceeding.
+3. Search the project collection first:
+   - Use `qmd query "<task topic>" --collection "$AGENT_WIKI_COLLECTION" --format files` for natural-language tasks.
+   - Use `qmd search "<exact token>" --collection "$AGENT_WIKI_COLLECTION" --format files` for filenames, errors, or exact phrases.
+4. Search global/private memory second only when project results are missing or local machine context matters.
+5. Retrieve only relevant files with `qmd get` or `qmd multi-get`.
+6. If qmd or the expected wiki collection is unavailable, state that clearly before proceeding.
 
 ## During-Work Routine
 
 Track durable work memory only:
 
 - task summary
-- current working directory
-- changed files
+- repo root or current working directory
+- changed files, using repo-relative paths for project memory
 - decisions and rationale
-- verification commands and evidence paths
+- verification commands and shareable evidence notes
 - blockers or follow-up notes
 
 Do not record raw conversation transcripts.
+Do not put local-only absolute evidence paths into project memory. Store those in global/private memory or mark them as local-only.
 
 ## End Routine
 
 After meaningful work:
 
-1. Write a structured session log under `$AGENT_WIKI_DIR/sessions/YYYY-MM-DD/`.
-2. Refresh qmd with `qmd update`.
-3. If semantic search freshness matters, run `qmd embed -c agent-wiki`.
-4. Verify retrieval with `qmd search "<log smoke token>" --collection agent-wiki --format files`.
+1. Write project-shareable facts under the project wiki by default.
+2. Write machine-local facts under the global/private wiki.
+3. Refresh qmd with `qmd update`.
+4. If semantic search freshness matters, run `qmd embed -c "$AGENT_WIKI_COLLECTION"` for project memory or `qmd embed -c agent-wiki` for global memory.
+5. Verify retrieval with `qmd search "<log smoke token>" --collection "$AGENT_WIKI_COLLECTION" --format files`.
 
 ## Privacy Guardrails
 

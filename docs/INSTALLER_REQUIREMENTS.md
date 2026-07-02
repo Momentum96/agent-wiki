@@ -17,15 +17,19 @@ The installer must resolve:
 
 - `HOME`
 - `CODEX_HOME`, defaulting to `$HOME/.codex`
-- `AGENT_WIKI_DIR`, defaulting to `$HOME/agent-wiki`
-- `AGENT_WIKI_STATE_DIR`, defaulting to `$HOME/.agent-wiki`
+- `AGENT_WIKI_SCOPE`, defaulting to `project`
+- `AGENT_WIKI_DIR`, defaulting to `<repo>/docs/agent-wiki` for project scope or `$HOME/agent-wiki` globally
+- `AGENT_WIKI_STATE_DIR`, defaulting to `<repo>/.agent-wiki/local` for project scope or `$HOME/.agent-wiki` globally
+- `AGENT_WIKI_COLLECTION`, defaulting to `agent-wiki-<repo-slug>` for project scope or `agent-wiki` globally
 - qmd executable path
 - package template directory
 - target skill directories
 
-The resolved paths must be visible through `agent-wiki paths`.
+The resolved paths and collection name must be visible through `agent-wiki paths`.
 
 `AGENT_WIKI_DIR` is the visible markdown wiki root that users can edit and search. `AGENT_WIKI_STATE_DIR` is reserved for internal machine-local state, cache metadata, and future installer bookkeeping.
+
+Project memory is for repo-shareable summaries, decisions, verification notes, and changed-file manifests. Project logs should use repo-relative paths. Machine-local absolute evidence paths belong in global/private memory or must be explicitly marked local-only.
 
 Do not rely on `npm bin -g`; it is not available in all npm versions. Prefer direct executable detection and package-manager-specific fallbacks.
 
@@ -79,12 +83,12 @@ The installer must:
 - check `qmd --version`
 - check `sqlite3 --version`
 - check `qmd collection list`
-- use `qmd collection show agent-wiki` before adding
+- use `qmd collection show <collection>` before adding
 - add the collection only if missing
 - add qmd context only if missing
 - run `qmd update`
 - run `qmd embed` only when requested or when `--skip-embed` is not set by policy
-- verify search with `qmd search "Agent Wiki Context" --collection agent-wiki --format files`
+- verify search with `qmd search "Agent Wiki Context" --collection <collection> --format files`
 
 If embedding fails after `qmd update` succeeds, setup can be considered partially functional. `verify` must report semantic search as degraded rather than treating the whole install as absent.
 
