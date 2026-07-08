@@ -35,7 +35,7 @@ When the user asks to use, enable, install, set up, or initialize agent-wiki for
 
 1. Treat project-local memory as the default. Do not add `--project`; it is already the default.
 2. Find the current repository root with `git rev-parse --show-toplevel`. Run setup from that root.
-3. Locate the agent-wiki CLI. Prefer an existing checkout at `$HOME/mac_work/agent-wiki/src/cli.ts`; otherwise use the checked-out agent-wiki repository or the installed `agent-wiki` executable if available.
+3. Locate the agent-wiki CLI. Prefer the checked-out agent-wiki repository or the installed `agent-wiki` executable if available.
 4. Run safe checks first:
    - `bun run <agent-wiki-cli> paths --json`
    - `bun run <agent-wiki-cli> doctor --json`
@@ -61,7 +61,7 @@ Track durable work memory only:
 - blockers or follow-up notes
 
 Do not record raw conversation transcripts.
-Do not put local-only absolute evidence paths into project memory. Store those in global/private memory or mark them as local-only.
+Do not put local-only absolute evidence paths into project memory. Store those in global/private memory or mark them as local-only. In project memory, write the repo root as `.` and use paths such as `src/cli.ts`, not `/Users/.../src/cli.ts` or `/Volumes/.../src/cli.ts`.
 
 ## End Routine
 
