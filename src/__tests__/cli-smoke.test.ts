@@ -95,7 +95,7 @@ describe("CLI smoke", () => {
 
       expect(stderr).toBe("")
       expect(exitCode).toBe(0)
-      expect(JSON.parse(stdout).changed.length).toBe(7)
+      expect(JSON.parse(stdout).changed.length).toBe(8)
     } finally {
       await rm(project, { force: true, recursive: true })
       await rm(target, { force: true, recursive: true })
@@ -114,7 +114,7 @@ describe("CLI smoke", () => {
       const exitCode = await proc.exited
 
       expect(exitCode).toBe(0)
-      expect(JSON.parse(stdout).changed.length).toBe(7)
+      expect(JSON.parse(stdout).changed.length).toBe(8)
     } finally {
       await rm(target, { force: true, recursive: true })
     }

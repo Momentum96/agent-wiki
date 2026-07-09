@@ -6,6 +6,7 @@ import { err, ok, type Result } from "./result"
 const TEMPLATE_PATHS = [
   "agents/AGENTS.agent-wiki-block.md",
   "scripts/agent-wiki-log.sh",
+  "scripts/agent-wiki-sanitize-log.ts",
   "scripts/agent-wiki-refresh.sh",
   "skills/agent-wiki-memory/SKILL.md",
   "skills/qmd-cli/SKILL.md",

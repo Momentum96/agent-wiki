@@ -9,6 +9,7 @@ const FILE_TARGETS = [
   ["wiki/context.md", "context.md", "wiki:context.md"],
   ["wiki/session-log.md", "templates/session-log.md", "wiki:templates/session-log.md"],
   ["scripts/agent-wiki-log.sh", "scripts/agent-wiki-log.sh", "script:agent-wiki-log.sh"],
+  ["scripts/agent-wiki-sanitize-log.ts", "scripts/agent-wiki-sanitize-log.ts", "script:agent-wiki-sanitize-log.ts"],
   ["scripts/agent-wiki-refresh.sh", "scripts/agent-wiki-refresh.sh", "script:agent-wiki-refresh.sh"],
 ] as const
 
