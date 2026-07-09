@@ -38,9 +38,9 @@ describe("template inventory", () => {
     expect(report.ok).toBe(true)
     if (!report.ok) throw new Error("expected dry-run copy to succeed")
     expect(report.value.changed).toHaveLength(8)
-    await expect(stat(join(target, "skills/qmd-cli/SKILL.md"))).resolves.toBeDefined()
-    await expect(stat(join(target, "scripts/agent-wiki-log.sh"))).resolves.toBeDefined()
-    await expect(stat(join(target, "scripts/agent-wiki-sanitize-log.ts"))).resolves.toBeDefined()
+    expect(await stat(join(target, "skills/qmd-cli/SKILL.md"))).toBeDefined()
+    expect(await stat(join(target, "scripts/agent-wiki-log.sh"))).toBeDefined()
+    expect(await stat(join(target, "scripts/agent-wiki-sanitize-log.ts"))).toBeDefined()
   })
 
   test("Given sanitizer source and packaged copies When comparing implementation Then they stay in sync", async () => {
@@ -148,7 +148,7 @@ describe("template inventory", () => {
     const file = stdout.trim()
     expect(file).toMatch(/\/work-log\/\d{4}-\d{2}-\d{2}-escape\.md$/)
     expect(file).not.toContain("..")
-    await expect(readFile(file, "utf8")).resolves.toBe("content\n")
+    expect(await readFile(file, "utf8")).toBe("content\n")
   })
 
   test("Given work-log mode When log helper writes project memory Then it sanitizes absolute paths in a work-log file", async () => {
