@@ -106,6 +106,7 @@ bun run src/cli.ts verify --json
 - `<repo>/docs/agent-wiki/context.md`
 - `<repo>/docs/agent-wiki/templates/session-log.md`
 - `<repo>/docs/agent-wiki/scripts/agent-wiki-log.sh`
+- `<repo>/docs/agent-wiki/scripts/agent-wiki-sanitize-log.ts`
 - `<repo>/docs/agent-wiki/scripts/agent-wiki-refresh.sh`
 
 기본 project-local 내부 상태 경로:
@@ -119,6 +120,7 @@ project collection은 기본적으로 `agent-wiki-<repo-slug>`를 사용하며, 
 - `$HOME/agent-wiki/context.md`
 - `$HOME/agent-wiki/templates/session-log.md`
 - `$HOME/agent-wiki/scripts/agent-wiki-log.sh`
+- `$HOME/agent-wiki/scripts/agent-wiki-sanitize-log.ts`
 - `$HOME/agent-wiki/scripts/agent-wiki-refresh.sh`
 
 global/private 내부 상태 경로:

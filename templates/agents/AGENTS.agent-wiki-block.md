@@ -12,6 +12,7 @@ Before any non-trivial task, load and follow the `agent-wiki-memory` skill.
 - Retrieve only relevant documents with `qmd get` or `qmd multi-get`.
 - When asked to set up agent-wiki for the current project, run the project-local setup flow from the repo root: `paths --json`, `doctor --json`, `setup --dry-run --json`, `setup --skip-embed --json`, then `verify --json`. Project-local is the default; use `--global` only when explicitly requested.
 - After meaningful work, record project-shareable summaries, decisions, verification, and changed files in project memory using repo-relative paths.
+- Write project session logs through `docs/agent-wiki/scripts/agent-wiki-log.sh`; for `work-log` entries use `AGENT_WIKI_LOG_KIND=work-log` with that helper so local absolute paths are sanitized.
 - Record machine-local facts only in global/private memory.
 - Run `qmd update` after writing wiki logs. Run `qmd embed -c "$AGENT_WIKI_COLLECTION"` when semantic search freshness matters.
 - If qmd or the skill is unavailable, state that clearly before proceeding.

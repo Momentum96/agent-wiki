@@ -63,6 +63,8 @@ Track durable work memory only:
 Do not record raw conversation transcripts.
 Do not put local-only absolute evidence paths into project memory. Store those in global/private memory or mark them as local-only. In project memory, write the repo root as `.` and use paths such as `src/cli.ts`, not `/Users/.../src/cli.ts` or `/Volumes/.../src/cli.ts`.
 
+For project logs, use `docs/agent-wiki/scripts/agent-wiki-log.sh` so machine-local absolute paths are sanitized automatically. For durable work logs, run `AGENT_WIKI_LOG_KIND=work-log docs/agent-wiki/scripts/agent-wiki-log.sh <slug>` and pipe the markdown through stdin. Do not hand-write project `sessions/` or `work-log/` files with raw `/Users/...`, `/home/...`, `/Volumes/...`, `/opt/homebrew/...`, `/private/tmp/...`, `/private/var/...`, `/var/folders/...`, or `/tmp/...` paths.
+
 ## End Routine
 
 After meaningful work:

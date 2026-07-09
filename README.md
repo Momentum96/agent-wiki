@@ -106,6 +106,7 @@ Default project-local wiki content:
 - `<repo>/docs/agent-wiki/context.md`
 - `<repo>/docs/agent-wiki/templates/session-log.md`
 - `<repo>/docs/agent-wiki/scripts/agent-wiki-log.sh`
+- `<repo>/docs/agent-wiki/scripts/agent-wiki-sanitize-log.ts`
 - `<repo>/docs/agent-wiki/scripts/agent-wiki-refresh.sh`
 
 Default project-local internal state:
@@ -119,6 +120,7 @@ Global/private wiki content when `--global` or `AGENT_WIKI_SCOPE=global` is used
 - `$HOME/agent-wiki/context.md`
 - `$HOME/agent-wiki/templates/session-log.md`
 - `$HOME/agent-wiki/scripts/agent-wiki-log.sh`
+- `$HOME/agent-wiki/scripts/agent-wiki-sanitize-log.ts`
 - `$HOME/agent-wiki/scripts/agent-wiki-refresh.sh`
 
 Global/private internal state:
