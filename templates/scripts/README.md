@@ -5,6 +5,7 @@ This directory contains helper scripts installed by `agent-wiki setup`.
 Expected templates:
 
 - `agent-wiki-log.sh`
+- `agent-wiki-sanitize-log.ts`
 - `agent-wiki-refresh.sh`
 
 Native Windows helper templates should be added only after they are parser-verified in PowerShell or CI.

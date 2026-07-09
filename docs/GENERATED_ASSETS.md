@@ -12,9 +12,10 @@ These files are generic Codex skill templates. They must not contain user-specif
 ## Script Templates
 
 - `templates/scripts/agent-wiki-log.sh`
+- `templates/scripts/agent-wiki-sanitize-log.ts`
 - `templates/scripts/agent-wiki-refresh.sh`
 
-The POSIX scripts are for macOS, Linux, and WSL. Native Windows helper templates are required by the platform contract, but should be added only after PowerShell parser validation is available.
+The POSIX shell scripts are for macOS, Linux, and WSL. The Bun/TypeScript sanitizer helper is copied alongside the log helper so project work logs can remove machine-local absolute paths before writing shareable wiki files. Native Windows helper templates are required by the platform contract, but should be added only after PowerShell parser validation is available.
 
 ## Wiki Templates
 
