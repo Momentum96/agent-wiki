@@ -24,8 +24,9 @@ describe("runPrerequisiteInstall", () => {
     expect(result.skipped.map((candidate) => candidate.id)).toEqual(["qmd"])
   })
 
-  test("Given --yes When qmd is missing Then it executes the candidate install command", async () => {
+  test("Given --yes When qmd is missing Then it installs and verifies qmd", async () => {
     const executed: string[] = []
+    let qmdChecks = 0
     const result = await runPrerequisiteInstall({
       platform: { kind: "darwin", isWsl: false },
       json: false,
@@ -33,13 +34,23 @@ describe("runPrerequisiteInstall", () => {
       noInstall: false,
       commandRunner: async (command, args) => {
         executed.push([command, ...args].join(" "))
-        if (command === "qmd") return { exitCode: 127, stdout: "", stderr: "not found" }
+        if (command === "qmd") {
+          qmdChecks += 1
+          return qmdChecks === 1
+            ? { exitCode: 127, stdout: "", stderr: "not found" }
+            : { exitCode: 0, stdout: "qmd 1.0.0", stderr: "" }
+        }
         if (command === "sqlite3") return { exitCode: 0, stdout: "3.50.0", stderr: "" }
         return { exitCode: 0, stdout: "", stderr: "" }
       },
     })
 
-    expect(executed).toEqual(["qmd --version", "sqlite3 --version", "bun install --global qmd"])
+    expect(executed).toEqual([
+      "qmd --version",
+      "sqlite3 --version",
+      "bun install --global @tobilu/qmd",
+      "qmd --version",
+    ])
     expect(result.installed.map((candidate) => candidate.id)).toEqual(["qmd"])
   })
 

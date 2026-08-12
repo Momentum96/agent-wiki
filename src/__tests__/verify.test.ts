@@ -15,6 +15,25 @@ describe("runVerify", () => {
     expect(report.checks.every((check) => check.status === "pass")).toBe(true)
   })
 
+  test("Given qmd search returns whitespace When verify runs Then it fails only the search check", async () => {
+    const report = await runVerify({
+      collectionName: "agent-wiki",
+      commandRunner: async (_command, args) => {
+        if (args[0] === "context") return { exitCode: 0, stdout: "agent-wiki\n", stderr: "" }
+        if (args[0] === "search") return { exitCode: 0, stdout: " \n\t", stderr: "" }
+        return { exitCode: 0, stdout: "", stderr: "" }
+      },
+    })
+
+    expect(report.ok).toBe(false)
+    expect(report.checks.filter((check) => check.status === "fail").map((check) => check.id)).toEqual([
+      "qmd-search",
+    ])
+    expect(report.checks.find((check) => check.id === "qmd-search")?.detail).toBe(
+      "No Agent Wiki Context search result found for collection agent-wiki.",
+    )
+  })
+
   test("Given qmd search fails When verify runs Then it reports failure without throwing", async () => {
     const report = await runVerify({
       commandRunner: async (_command, args) =>

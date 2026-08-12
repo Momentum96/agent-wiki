@@ -72,14 +72,28 @@ export async function installSelectedPrerequisites(input: {
     }
 
     const result = await input.commandRunner(candidate.command, candidate.args)
-    if (result.exitCode === 0) {
-      installed.push(candidate)
-    } else {
+    if (result.exitCode !== 0) {
       failed.push({
         candidate,
         detail: result.stderr.trim() || result.stdout.trim() || `${candidate.command} failed`,
       })
+      continue
     }
+
+    if (candidate.id === "qmd") {
+      const postCheck = await input.commandRunner("qmd", ["--version"])
+      if (postCheck.exitCode !== 0) {
+        failed.push({
+          candidate,
+          detail: postCheck.stderr.trim() ||
+            postCheck.stdout.trim() ||
+            "qmd --version failed after installation",
+        })
+        continue
+      }
+    }
+
+    installed.push(candidate)
   }
 
   return {
@@ -99,7 +113,7 @@ export function installCandidateFor(
       id,
       label: "qmd CLI",
       command: "bun",
-      args: ["install", "--global", "qmd"],
+      args: ["install", "--global", "@tobilu/qmd"],
       manager: "bun",
       note: "qmd is the required retrieval and indexing CLI.",
     }

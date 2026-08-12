@@ -88,15 +88,17 @@ The installer must:
 - add qmd context only if missing
 - run `qmd update`
 - run `qmd embed` only when requested or when `--skip-embed` is not set by policy
-- verify search with `qmd search "Agent Wiki Context" --collection <collection> --format files`
+- run the setup smoke search with
+  `qmd search "Agent Wiki Context" --collection <collection> --format files`
 
 If embedding fails after `qmd update` succeeds, setup can be considered partially functional. `verify` must report semantic search as degraded rather than treating the whole install as absent.
+`verify` must also require at least one non-whitespace result from its qmd smoke search.
 
 ## Prerequisite Install Rules
 
 `setup --install-prereqs` may install only:
 
-- qmd, using `bun install --global qmd`
+- qmd, using `bun install --global @tobilu/qmd`
 - SQLite, using the platform-specific package manager hint for the current OS
 
 It must not install:
@@ -109,6 +111,7 @@ It must not install:
 Rules:
 
 - show the exact command before installing
+- report qmd installed only after a successful post-install `qmd --version`
 - ask `y/N` for each missing installable prerequisite
 - treat empty input as no
 - support `--no-install` for diagnostics only

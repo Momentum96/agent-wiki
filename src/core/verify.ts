@@ -24,11 +24,14 @@ export async function runVerify(input: {
   for (const [id, args] of checksFor(collectionName)) {
     const result = await commandRunner("qmd", args)
     const contextMissing = id === "qmd-context" && !hasExactContext(result.stdout, collectionName)
-    const failed = result.exitCode !== 0 || contextMissing
+    const searchMissing = id === "qmd-search" && result.exitCode === 0 && !result.stdout.trim()
+    const failed = result.exitCode !== 0 || contextMissing || searchMissing
     checks.push({
       id,
       status: failed ? "fail" : "pass",
-      detail: result.stdout.trim() || result.stderr.trim(),
+      detail: searchMissing
+        ? `No Agent Wiki Context search result found for collection ${collectionName}.`
+        : result.stdout.trim() || result.stderr.trim(),
     })
   }
 
