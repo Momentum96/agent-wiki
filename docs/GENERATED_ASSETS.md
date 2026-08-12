@@ -4,10 +4,22 @@ This document lists the packaged templates that `agent-wiki setup` should copy i
 
 ## Skill Templates
 
+Default setup copies:
+
 - `templates/skills/qmd-cli/SKILL.md`
 - `templates/skills/agent-wiki-memory/SKILL.md`
 
-These files are generic Codex skill templates. They must not contain user-specific paths, local machine names, secrets, or raw transcript content.
+`setup --with-obsidian-skills` is the only installer ownership path for these optional trees. Without that flag, setup must preserve existing same-named directories without creating, changing, deleting, or reporting them:
+
+- `templates/skills/defuddle/{SKILL.md,LICENSE}`
+- `templates/skills/json-canvas/{SKILL.md,references/EXAMPLES.md,LICENSE}`
+- `templates/skills/obsidian-bases/{SKILL.md,references/FUNCTIONS_REFERENCE.md,LICENSE}`
+- `templates/skills/obsidian-cli/{SKILL.md,LICENSE}`
+- `templates/skills/obsidian-markdown/{SKILL.md,references/CALLOUTS.md,references/EMBEDS.md,references/PROPERTIES.md,LICENSE}`
+
+Each optional tree retains its upstream MIT `LICENSE`. `THIRD_PARTY_NOTICES.md` identifies Kepano as the source and pins revision `a1dc48e68138490d522c04cbf5822214c6eb1202`. Do not package or install `obsidian-zettelkasten`.
+
+All skill templates are generic. They must not contain user-specific paths, vault names, local machine names, secrets, or raw transcript content. The option copies packaged assets only. It never installs Obsidian, plugins, Defuddle, or another runtime dependency.
 
 ## Script Templates
 
@@ -33,6 +45,10 @@ The installer should merge this block into `$CODEX_HOME/AGENTS.md` using the `ag
 ## Installer Rules
 
 The installer should copy templates rather than reconstructing long text in code.
+
+qmd is reserved for repository memory. It must not create, search, index, update, refresh, synchronize, or mirror a qmd collection for an Obsidian vault. Vault work requires a user-identified vault and the authorized Obsidian tool for that request. The installer must not select, create, discover, or prescribe a vault.
+
+The published package must exclude `docs/agent-wiki/`. Those files are local project records, not packaged assets.
 
 It may substitute target paths only when a template explicitly contains a placeholder. Current templates avoid path placeholders so they remain portable.
 

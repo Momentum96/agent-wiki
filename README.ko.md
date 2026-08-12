@@ -59,6 +59,24 @@ Codex 설정을 건드리지 않고 setup이 복사할 파일만 보려면:
 bun run src/cli.ts setup --dry-run
 ```
 
+## 선택형 Obsidian 스킬
+
+기본 setup은 선택형 Obsidian 스킬 디렉터리를 생성, 수정, 삭제하거나 보고하지 않습니다. 같은 이름의 기존 디렉터리는 사용자의 것으로 유지됩니다.
+
+Codex 홈에 쓰지 않고 선택형 복사를 확인하려면:
+
+```bash
+bun run src/cli.ts setup --dry-run --with-obsidian-skills --json
+```
+
+선택형 스킬을 설치하거나 업데이트하려면 다음을 사용하세요.
+
+```bash
+bun run src/cli.ts setup --with-obsidian-skills --skip-embed --json
+```
+
+이 플래그만 `$CODEX_HOME/skills` 아래의 packaged 스킬을 관리합니다. 대상은 `defuddle`, `json-canvas`, `obsidian-bases`, `obsidian-cli`, `obsidian-markdown`입니다. 이 옵션은 Obsidian, Defuddle, 또는 다른 runtime dependency를 설치하지 않습니다. OpenCode도 설치하지 않으며, vault를 자동화하거나 vault용 qmd collection을 생성, 검색, 인덱싱, 업데이트, 새로 고침하지 않습니다. `obsidian-zettelkasten`은 포함하지 않습니다. vendored 스킬의 source, revision, MIT notice는 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)에서 확인할 수 있습니다.
+
 qmd와 SQLite 선행 조건을 확인하려면:
 
 ```bash
@@ -134,6 +152,10 @@ global/private 내부 상태 경로:
 - `$CODEX_HOME/skills/qmd-cli/SKILL.md`
 - `$CODEX_HOME/skills/agent-wiki-memory/SKILL.md`
 
+`setup --with-obsidian-skills`만 관리하는 선택형 Obsidian 대상:
+
+- `$CODEX_HOME/skills/{defuddle,json-canvas,obsidian-bases,obsidian-cli,obsidian-markdown}/...`
+
 ## 안전 원칙
 
 installer는 idempotent해야 합니다. setup을 여러 번 실행해도 qmd collection, qmd context, skill, script, global `AGENTS.md` block이 중복되면 안 됩니다.
@@ -157,6 +179,8 @@ installer가 절대 복사하거나 패키징하면 안 되는 것:
 | `agent-wiki doctor` | 구현됨 | Bun, Node.js, qmd, SQLite, Codex 파일을 쓰기 없이 점검 |
 | `agent-wiki setup --install-prereqs` | 구현됨 | qmd와 SQLite를 확인하고, 빠진 항목만 승인 후 설치 제안 |
 | `agent-wiki setup --dry-run` | 구현됨 | packaged template을 임시 대상에 복사해 검사 |
+| `agent-wiki setup --dry-run --with-obsidian-skills` | 구현됨 | `$CODEX_HOME/skills`에 쓰지 않고 다섯 선택형 Obsidian 스킬 tree를 검사 |
+| `agent-wiki setup --with-obsidian-skills` | 구현됨 | `$CODEX_HOME/skills` 아래 다섯 선택형 Obsidian 스킬 tree만 설치 또는 업데이트 |
 | `agent-wiki setup` | 구현됨 | 전체 로컬 agent wiki setup 생성/복구. 기본은 repo-local memory이며 global/private memory는 `--global` 사용 |
 | `agent-wiki verify` | 구현됨 | 설치된 workflow에 대해 qmd smoke check 실행. 기본은 project collection이며 global/private collection은 `--global` 사용 |
 

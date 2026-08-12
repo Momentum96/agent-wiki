@@ -91,6 +91,24 @@ This copies packaged templates into a temporary directory. It must not modify Co
 
 Repo-local memory is the default. Use `--global` only when inspecting the optional global/private memory setup.
 
+### Optional Obsidian Skills
+
+Without `--with-obsidian-skills`, setup doesn't create, modify, delete, or report the optional skill directories, so existing same-named directories are preserved.
+
+Inspect the optional copy without writing to Codex:
+
+```bash
+bun run src/cli.ts setup --dry-run --with-obsidian-skills --json
+```
+
+After the user confirms, install or update the optional packaged skills with:
+
+```bash
+bun run src/cli.ts setup --with-obsidian-skills --skip-embed --json
+```
+
+This flag is the only installer ownership path for `$CODEX_HOME/skills/defuddle`, `$CODEX_HOME/skills/json-canvas`, `$CODEX_HOME/skills/obsidian-bases`, `$CODEX_HOME/skills/obsidian-cli`, and `$CODEX_HOME/skills/obsidian-markdown`. It copies packaged assets only and doesn't install Obsidian, Defuddle, OpenCode, or another runtime dependency. It doesn't automate a vault or create, search, index, update, or refresh a qmd collection for a vault. `obsidian-zettelkasten` isn't shipped. See [THIRD_PARTY_NOTICES.md](../../THIRD_PARTY_NOTICES.md) for the vendored skill source, revision, and MIT notice.
+
 ## Step 7: Apply Setup
 
 After the user confirms they want to modify the local Codex/qmd setup, run:

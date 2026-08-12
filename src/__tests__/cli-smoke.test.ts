@@ -3,7 +3,43 @@ import { mkdir, mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
+const OPTIONAL_TEMPLATE_PATHS = [
+  "skills/defuddle/LICENSE",
+  "skills/defuddle/SKILL.md",
+  "skills/json-canvas/LICENSE",
+  "skills/json-canvas/SKILL.md",
+  "skills/json-canvas/references/EXAMPLES.md",
+  "skills/obsidian-bases/LICENSE",
+  "skills/obsidian-bases/SKILL.md",
+  "skills/obsidian-bases/references/FUNCTIONS_REFERENCE.md",
+  "skills/obsidian-cli/LICENSE",
+  "skills/obsidian-cli/SKILL.md",
+  "skills/obsidian-markdown/LICENSE",
+  "skills/obsidian-markdown/SKILL.md",
+  "skills/obsidian-markdown/references/CALLOUTS.md",
+  "skills/obsidian-markdown/references/EMBEDS.md",
+  "skills/obsidian-markdown/references/PROPERTIES.md",
+] as const
+
 describe("CLI smoke", () => {
+  test("Given CLI help When printed Then it advertises the optional Obsidian skill flag", async () => {
+    const proc = Bun.spawn({
+      cmd: ["bun", "run", "src/cli.ts", "--help"],
+      stdout: "pipe",
+      stderr: "pipe",
+    })
+
+    const [stdout, stderr, exitCode] = await Promise.all([
+      new Response(proc.stdout).text(),
+      new Response(proc.stderr).text(),
+      proc.exited,
+    ])
+
+    expect(exitCode).toBe(0)
+    expect(stderr).toBe("")
+    expect(stdout).toContain("--with-obsidian-skills")
+  })
+
   test("Given env overrides When paths --json runs Then it prints parseable JSON", async () => {
     const proc = Bun.spawn({
       cmd: ["bun", "run", "src/cli.ts", "paths", "--json"],
@@ -102,7 +138,7 @@ describe("CLI smoke", () => {
     }
   })
 
-  test("Given temp target When setup dry-run runs Then it writes templates only under target", async () => {
+  test("Given temp target When default setup dry-run runs Then JSON lists only eight base templates", async () => {
     const target = await mkdtemp(join(tmpdir(), "agent-wiki-cli-"))
     try {
       const proc = Bun.spawn({
@@ -112,11 +148,92 @@ describe("CLI smoke", () => {
       })
       const stdout = await new Response(proc.stdout).text()
       const exitCode = await proc.exited
+      const changed = JSON.parse(stdout).changed as string[]
 
       expect(exitCode).toBe(0)
-      expect(JSON.parse(stdout).changed.length).toBe(8)
+      expect(changed).toHaveLength(8)
+      expect(
+        changed.some((path) =>
+          OPTIONAL_TEMPLATE_PATHS.includes(path as typeof OPTIONAL_TEMPLATE_PATHS[number]),
+        ),
+      ).toBe(false)
     } finally {
       await rm(target, { force: true, recursive: true })
+    }
+  })
+
+  test("Given opt-in flag When setup dry-run runs Then JSON lists eight base and 15 optional templates", async () => {
+    const target = await mkdtemp(join(tmpdir(), "agent-wiki-cli-obsidian-"))
+    try {
+      const proc = Bun.spawn({
+        cmd: [
+          "bun",
+          "run",
+          "src/cli.ts",
+          "setup",
+          "--dry-run",
+          "--with-obsidian-skills",
+          "--target",
+          target,
+          "--json",
+        ],
+        stdout: "pipe",
+        stderr: "pipe",
+      })
+      const [stdout, stderr, exitCode] = await Promise.all([
+        new Response(proc.stdout).text(),
+        new Response(proc.stderr).text(),
+        proc.exited,
+      ])
+      const changed = JSON.parse(stdout).changed as string[]
+
+      expect(exitCode).toBe(0)
+      expect(stderr).toBe("")
+      expect(changed).toHaveLength(23)
+      expect(
+        changed
+          .filter((path) => OPTIONAL_TEMPLATE_PATHS.includes(path as typeof OPTIONAL_TEMPLATE_PATHS[number]))
+          .sort(),
+      ).toEqual([...OPTIONAL_TEMPLATE_PATHS])
+    } finally {
+      await rm(target, { force: true, recursive: true })
+    }
+  })
+
+  test("Given a regular-file dry-run target When CLI runs in JSON mode Then it exits one with parseable error JSON", async () => {
+    const root = await mkdtemp(join(tmpdir(), "agent-wiki-cli-file-target-"))
+    const target = join(root, "target-file")
+    await Bun.write(target, "not a directory")
+
+    try {
+      const proc = Bun.spawn({
+        cmd: [
+          "bun",
+          "run",
+          "src/cli.ts",
+          "setup",
+          "--dry-run",
+          "--with-obsidian-skills",
+          "--target",
+          target,
+          "--json",
+        ],
+        stdout: "pipe",
+        stderr: "pipe",
+      })
+      const [stdout, stderr, exitCode] = await Promise.all([
+        new Response(proc.stdout).text(),
+        new Response(proc.stderr).text(),
+        proc.exited,
+      ])
+      const parsed = JSON.parse(stdout) as { error?: string }
+
+      expect(exitCode).toBe(1)
+      expect(stderr).toBe("")
+      expect(parsed.error).toBeString()
+      expect(parsed.error?.length).toBeGreaterThan(0)
+    } finally {
+      await rm(root, { force: true, recursive: true })
     }
   })
 })

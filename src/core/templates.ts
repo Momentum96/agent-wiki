@@ -14,6 +14,24 @@ const TEMPLATE_PATHS = [
   "wiki/session-log.md",
 ] as const
 
+const OPTIONAL_OBSIDIAN_SKILL_PATHS = [
+  "skills/defuddle/LICENSE",
+  "skills/defuddle/SKILL.md",
+  "skills/json-canvas/LICENSE",
+  "skills/json-canvas/SKILL.md",
+  "skills/json-canvas/references/EXAMPLES.md",
+  "skills/obsidian-bases/LICENSE",
+  "skills/obsidian-bases/SKILL.md",
+  "skills/obsidian-bases/references/FUNCTIONS_REFERENCE.md",
+  "skills/obsidian-cli/LICENSE",
+  "skills/obsidian-cli/SKILL.md",
+  "skills/obsidian-markdown/LICENSE",
+  "skills/obsidian-markdown/SKILL.md",
+  "skills/obsidian-markdown/references/CALLOUTS.md",
+  "skills/obsidian-markdown/references/EMBEDS.md",
+  "skills/obsidian-markdown/references/PROPERTIES.md",
+] as const
+
 export type TemplateAsset = {
   readonly relativePath: string
   readonly sourcePath: string
@@ -34,8 +52,12 @@ export type TemplateError = {
 
 export async function listTemplateAssets(input: {
   readonly templateDir: string
+  readonly withObsidianSkills: boolean
 }): Promise<readonly TemplateAsset[]> {
-  return TEMPLATE_PATHS.map((relativePath) => ({
+  const paths: readonly string[] = input.withObsidianSkills
+    ? [...TEMPLATE_PATHS, ...OPTIONAL_OBSIDIAN_SKILL_PATHS]
+    : TEMPLATE_PATHS
+  return paths.map((relativePath) => ({
     relativePath,
     sourcePath: join(input.templateDir, relativePath),
   }))
@@ -44,6 +66,7 @@ export async function listTemplateAssets(input: {
 export async function copyTemplatesDryRun(input: {
   readonly templateDir: string
   readonly targetDir: string
+  readonly withObsidianSkills: boolean
 }): Promise<Result<TemplateReport, TemplateError>> {
   try {
     const assets = await listTemplateAssets(input)

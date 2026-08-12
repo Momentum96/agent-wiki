@@ -22,6 +22,7 @@ export async function handleSetup(args: readonly string[]): Promise<number> {
   const json = args.includes("--json")
   const dryRun = args.includes("--dry-run")
   const installPrereqs = args.includes("--install-prereqs")
+  const withObsidianSkills = args.includes("--with-obsidian-skills")
   const paths = resolveSetupPaths(args)
   if (!paths.ok) {
     if (json) printJson({ error: paths.error.message })
@@ -56,6 +57,7 @@ export async function handleSetup(args: readonly string[]): Promise<number> {
     const result = await runSetup({
       paths: paths.value,
       skipEmbed: args.includes("--skip-embed"),
+      withObsidianSkills,
     })
     if (json) printJson(result)
     else printSetupResult(result)
@@ -66,6 +68,7 @@ export async function handleSetup(args: readonly string[]): Promise<number> {
   const result = await copyTemplatesDryRun({
     templateDir: paths.value.templateDir,
     targetDir: target,
+    withObsidianSkills,
   })
 
   if (!result.ok) {

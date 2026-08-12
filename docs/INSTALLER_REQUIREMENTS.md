@@ -130,6 +130,26 @@ All generated long-form content must come from packaged templates:
 
 Installer logic should only substitute paths and platform-specific values.
 
+### Optional Obsidian Skill Assets
+
+`setup --with-obsidian-skills` is the only installer ownership path for the optional Obsidian skill directories. It installs or updates these complete trees beneath `$CODEX_HOME/skills`:
+
+- `defuddle/{SKILL.md,LICENSE}`
+- `json-canvas/{SKILL.md,references/EXAMPLES.md,LICENSE}`
+- `obsidian-bases/{SKILL.md,references/FUNCTIONS_REFERENCE.md,LICENSE}`
+- `obsidian-cli/{SKILL.md,LICENSE}`
+- `obsidian-markdown/{SKILL.md,references/CALLOUTS.md,references/EMBEDS.md,references/PROPERTIES.md,LICENSE}`
+
+Each tree retains its upstream MIT `LICENSE`. `THIRD_PARTY_NOTICES.md` records Kepano as the source, the pinned revision `a1dc48e68138490d522c04cbf5822214c6eb1202`, and the MIT notice. Do not package or install `obsidian-zettelkasten`.
+
+Without `--with-obsidian-skills`, setup must neither create, modify, delete, nor report those five optional skill directories. Existing same-named user directories remain outside installer ownership.
+
+The flag only copies packaged assets. It must not install Obsidian, plugins, Defuddle, Node.js, Bun, qmd, SQLite, or another runtime dependency. Defuddle installation always requires separate, explicit user approval at runtime.
+
+### qmd and Obsidian Vault Boundary
+
+qmd remains the repository-memory workflow. It must not create, search, index, update, refresh, synchronize, or mirror a qmd collection for an Obsidian vault. Vault work requires an explicitly identified vault and the authorized Obsidian tool for that request. The installer must not select, create, discover, or prescribe a vault.
+
 ## Reporting
 
 Every command should print a summary with:

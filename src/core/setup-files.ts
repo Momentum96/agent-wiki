@@ -18,6 +18,44 @@ const SKILL_TARGETS = [
   ["skills/agent-wiki-memory/SKILL.md", "agent-wiki-memory/SKILL.md", "skill:agent-wiki-memory"],
 ] as const
 
+const OPTIONAL_OBSIDIAN_SKILL_TARGETS = [
+  ["skills/defuddle/LICENSE", "defuddle/LICENSE", "skill:defuddle/LICENSE"],
+  ["skills/defuddle/SKILL.md", "defuddle/SKILL.md", "skill:defuddle/SKILL.md"],
+  ["skills/json-canvas/LICENSE", "json-canvas/LICENSE", "skill:json-canvas/LICENSE"],
+  ["skills/json-canvas/SKILL.md", "json-canvas/SKILL.md", "skill:json-canvas/SKILL.md"],
+  [
+    "skills/json-canvas/references/EXAMPLES.md",
+    "json-canvas/references/EXAMPLES.md",
+    "skill:json-canvas/references/EXAMPLES.md",
+  ],
+  ["skills/obsidian-bases/LICENSE", "obsidian-bases/LICENSE", "skill:obsidian-bases/LICENSE"],
+  ["skills/obsidian-bases/SKILL.md", "obsidian-bases/SKILL.md", "skill:obsidian-bases/SKILL.md"],
+  [
+    "skills/obsidian-bases/references/FUNCTIONS_REFERENCE.md",
+    "obsidian-bases/references/FUNCTIONS_REFERENCE.md",
+    "skill:obsidian-bases/references/FUNCTIONS_REFERENCE.md",
+  ],
+  ["skills/obsidian-cli/LICENSE", "obsidian-cli/LICENSE", "skill:obsidian-cli/LICENSE"],
+  ["skills/obsidian-cli/SKILL.md", "obsidian-cli/SKILL.md", "skill:obsidian-cli/SKILL.md"],
+  ["skills/obsidian-markdown/LICENSE", "obsidian-markdown/LICENSE", "skill:obsidian-markdown/LICENSE"],
+  ["skills/obsidian-markdown/SKILL.md", "obsidian-markdown/SKILL.md", "skill:obsidian-markdown/SKILL.md"],
+  [
+    "skills/obsidian-markdown/references/CALLOUTS.md",
+    "obsidian-markdown/references/CALLOUTS.md",
+    "skill:obsidian-markdown/references/CALLOUTS.md",
+  ],
+  [
+    "skills/obsidian-markdown/references/EMBEDS.md",
+    "obsidian-markdown/references/EMBEDS.md",
+    "skill:obsidian-markdown/references/EMBEDS.md",
+  ],
+  [
+    "skills/obsidian-markdown/references/PROPERTIES.md",
+    "obsidian-markdown/references/PROPERTIES.md",
+    "skill:obsidian-markdown/references/PROPERTIES.md",
+  ],
+] as const
+
 const LEGACY_AGENT_WIKI_MEMORY_FILES = [
   "agent-wiki-memory/scripts/agent-wiki-refresh.sh",
   "agent-wiki-memory/scripts/agent-wiki-log.sh",
@@ -34,6 +72,7 @@ const LEGACY_AGENT_WIKI_MEMORY_DIRS = [
 export async function installTemplateFiles(input: {
   readonly paths: ResolvedPaths
   readonly report: MutableSetupReport
+  readonly withObsidianSkills: boolean
 }): Promise<void> {
   await mkdir(input.paths.agentWikiDir, { recursive: true })
   await mkdir(input.paths.stateDir, { recursive: true })
@@ -54,6 +93,16 @@ export async function installTemplateFiles(input: {
       targetPath: join(input.paths.skillsDir, target),
     })
     input.report[status].push(label)
+  }
+
+  if (input.withObsidianSkills) {
+    for (const [source, target, label] of OPTIONAL_OBSIDIAN_SKILL_TARGETS) {
+      const status = await copyIfChanged({
+        sourcePath: join(input.paths.templateDir, source),
+        targetPath: join(input.paths.skillsDir, target),
+      })
+      input.report[status].push(label)
+    }
   }
 
   await removeLegacyAgentWikiMemoryAssets(input.paths, input.report)

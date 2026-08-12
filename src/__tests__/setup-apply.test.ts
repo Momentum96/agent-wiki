@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { mkdir, mkdtemp, readFile, stat, writeFile } from "node:fs/promises"
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
@@ -14,6 +14,7 @@ describe("runSetup", () => {
     const report = await runSetup({
       paths,
       skipEmbed: true,
+      withObsidianSkills: false,
       commandRunner: async (command, args) => {
         commands.push([command, ...args].join(" "))
         if (command === "which") return { exitCode: 0, stdout: "/opt/bin/qmd\n", stderr: "" }
@@ -60,6 +61,7 @@ describe("runSetup", () => {
     const report = await runSetup({
       paths,
       skipEmbed: true,
+      withObsidianSkills: false,
       commandRunner: async (command, args) => {
         commands.push([command, ...args].join(" "))
         if (command === "which") return { exitCode: 0, stdout: "/opt/bin/qmd\n", stderr: "" }
@@ -90,6 +92,7 @@ describe("runSetup", () => {
     const report = await runSetup({
       paths,
       skipEmbed: true,
+      withObsidianSkills: false,
       commandRunner: async (command, args) => {
         commands.push([command, ...args].join(" "))
         if (command === "which") return { exitCode: 0, stdout: "/opt/bin/qmd\n", stderr: "" }
@@ -114,11 +117,13 @@ describe("runSetup", () => {
     const first = await runSetup({
       paths,
       skipEmbed: true,
+      withObsidianSkills: false,
       commandRunner: async (command, args) => qmdAlreadyConfigured(command, args),
     })
     const second = await runSetup({
       paths,
       skipEmbed: true,
+      withObsidianSkills: false,
       commandRunner: async (command, args) => qmdAlreadyConfigured(command, args),
     })
 
@@ -134,6 +139,119 @@ describe("runSetup", () => {
     const agents = await readFile(join(paths.codexHome, "AGENTS.md"), "utf8")
     expect(agents).toContain("Existing instructions")
     expect(agents.match(/agent-wiki:start/g)?.length).toBe(1)
+  })
+
+  test("Given recursive optional sentinels When default and opt-in setups run Then only opt-in manages optional assets idempotently", async () => {
+    const root = await mkdtemp(join(tmpdir(), "agent-wiki-setup-obsidian-"))
+    const paths = testPaths(root)
+    const skillNames = [
+      "defuddle",
+      "json-canvas",
+      "obsidian-bases",
+      "obsidian-cli",
+      "obsidian-markdown",
+    ] as const
+    const optionalLabels = [
+      "skill:defuddle/LICENSE",
+      "skill:defuddle/SKILL.md",
+      "skill:json-canvas/LICENSE",
+      "skill:json-canvas/SKILL.md",
+      "skill:json-canvas/references/EXAMPLES.md",
+      "skill:obsidian-bases/LICENSE",
+      "skill:obsidian-bases/SKILL.md",
+      "skill:obsidian-bases/references/FUNCTIONS_REFERENCE.md",
+      "skill:obsidian-cli/LICENSE",
+      "skill:obsidian-cli/SKILL.md",
+      "skill:obsidian-markdown/LICENSE",
+      "skill:obsidian-markdown/SKILL.md",
+      "skill:obsidian-markdown/references/CALLOUTS.md",
+      "skill:obsidian-markdown/references/EMBEDS.md",
+      "skill:obsidian-markdown/references/PROPERTIES.md",
+    ] as const
+
+    try {
+      for (const [index, skillName] of skillNames.entries()) {
+        const sentinel = join(paths.skillsDir, skillName, "user", "nested", `sentinel-${index}.txt`)
+        await mkdir(join(sentinel, ".."), { recursive: true })
+        await writeFile(sentinel, `sentinel:${skillName}`)
+      }
+
+      const optionalRelativePaths = optionalLabels.map((label) => label.slice("skill:".length))
+      const optionalPrefixes = skillNames.map((skillName) => `skill:${skillName}/`)
+      const hasOptionalLabel = (labels: readonly string[]) =>
+        labels.some((label) => optionalPrefixes.some((prefix) => label.startsWith(prefix)))
+      const allReportLabels = (report: {
+        readonly changed: readonly string[]
+        readonly unchanged: readonly string[]
+        readonly skipped: readonly string[]
+        readonly failed: readonly string[]
+      }) => [...report.changed, ...report.unchanged, ...report.skipped, ...report.failed]
+
+      const defaultBefore = await runSetup({
+        paths,
+        skipEmbed: true,
+        withObsidianSkills: false,
+        commandRunner: qmdAlreadyConfigured,
+      })
+      expect(hasOptionalLabel(allReportLabels(defaultBefore))).toBe(false)
+      for (const relativePath of optionalRelativePaths) {
+        await expect(stat(join(paths.skillsDir, relativePath))).rejects.toThrow()
+      }
+
+      const optInFirst = await runSetup({
+        paths,
+        skipEmbed: true,
+        withObsidianSkills: true,
+        commandRunner: qmdAlreadyConfigured,
+      })
+      const optInSnapshot = new Map(
+        await Promise.all(
+          optionalRelativePaths.map(async (relativePath) => [
+            relativePath,
+            await readFile(join(paths.skillsDir, relativePath)),
+          ] as const),
+        ),
+      )
+
+      const defaultAfter = await runSetup({
+        paths,
+        skipEmbed: true,
+        withObsidianSkills: false,
+        commandRunner: qmdAlreadyConfigured,
+      })
+      expect(hasOptionalLabel(allReportLabels(defaultAfter))).toBe(false)
+      for (const relativePath of optionalRelativePaths) {
+        const expected = optInSnapshot.get(relativePath)
+        if (expected === undefined) throw new Error(`missing optional snapshot: ${relativePath}`)
+        expect(await readFile(join(paths.skillsDir, relativePath))).toEqual(expected)
+      }
+
+      const optInSecond = await runSetup({
+        paths,
+        skipEmbed: true,
+        withObsidianSkills: true,
+        commandRunner: qmdAlreadyConfigured,
+      })
+
+      expect(
+        optInFirst.changed
+          .filter((label) => optionalLabels.includes(label as typeof optionalLabels[number]))
+          .sort(),
+      ).toEqual([...optionalLabels])
+      expect(
+        optInSecond.unchanged
+          .filter((label) => optionalLabels.includes(label as typeof optionalLabels[number]))
+          .sort(),
+      ).toEqual([...optionalLabels])
+      expect(hasOptionalLabel(optInSecond.changed)).toBe(false)
+
+      for (const [index, skillName] of skillNames.entries()) {
+        const sentinel = join(paths.skillsDir, skillName, "user", "nested", `sentinel-${index}.txt`)
+        expect(await readFile(sentinel, "utf8")).toBe(`sentinel:${skillName}`)
+      }
+    } finally {
+      await rm(root, { force: true, recursive: true })
+    }
   })
 
   test("Given legacy installed agent wiki assets When setup runs Then it removes them", async () => {
@@ -168,6 +286,7 @@ describe("runSetup", () => {
     const report = await runSetup({
       paths,
       skipEmbed: true,
+      withObsidianSkills: false,
       commandRunner: async (command, args) => qmdAlreadyConfigured(command, args),
     })
 

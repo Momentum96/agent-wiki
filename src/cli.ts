@@ -13,8 +13,8 @@ const USAGE = `Usage: agent-wiki <command> [options]
 Commands:
   paths [--project|--global] [--collection <name>] [--json]
   doctor [--json]
-  setup --dry-run [--target <dir>] [--json]
-  setup [--project|--global] [--collection <name>] [--wiki-dir <dir>] [--codex-home <dir>] [--skip-embed] [--json]
+  setup --dry-run [--target <dir>] [--with-obsidian-skills] [--json]
+  setup [--project|--global] [--collection <name>] [--wiki-dir <dir>] [--codex-home <dir>] [--with-obsidian-skills] [--skip-embed] [--json]
   setup --install-prereqs [--yes|--no-install] [--dry-run] [--json]
   verify [--project|--global] [--collection <name>] [--json]
 `

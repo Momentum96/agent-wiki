@@ -8,6 +8,7 @@ import { installTemplateFiles } from "./setup-files"
 export async function runSetup(input: {
   readonly paths: ResolvedPaths
   readonly skipEmbed: boolean
+  readonly withObsidianSkills: boolean
   readonly commandRunner?: CommandRunner
 }): Promise<SetupReport> {
   const commandRunner = input.commandRunner ?? runCommand
@@ -15,7 +16,11 @@ export async function runSetup(input: {
   const stamp = new Date().toISOString().replace(/[:.]/gu, "-")
   const qmdCommand = await resolveQmdCommand(commandRunner)
 
-  await installTemplateFiles({ paths: input.paths, report })
+  await installTemplateFiles({
+    paths: input.paths,
+    report,
+    withObsidianSkills: input.withObsidianSkills,
+  })
   await installCodexFiles({ paths: input.paths, qmdCommand, stamp, report })
   await configureQmd({
     paths: input.paths,

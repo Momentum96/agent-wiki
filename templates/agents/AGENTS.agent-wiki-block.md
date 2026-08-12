@@ -16,6 +16,7 @@ Before any non-trivial task, load and follow the `agent-wiki-memory` skill.
 - Record machine-local facts only in global/private memory.
 - Run `qmd update` after writing wiki logs. Run `qmd embed -c "$AGENT_WIKI_COLLECTION"` when semantic search freshness matters.
 - If qmd or the skill is unavailable, state that clearly before proceeding.
+- <!-- agent-wiki:obsidian-boundary --> For Obsidian work, load the skill's Obsidian Vault Boundary first and proceed only with the explicitly named vault, operation target, and required authorized tool; never route vault content through qmd or another vault.
 
 Privacy guardrails:
 

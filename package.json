@@ -11,7 +11,11 @@
     "src/commands",
     "src/core",
     "templates",
-    "docs",
+    "docs/guide/installation.md",
+    "docs/PROJECT_BRIEF.md",
+    "docs/INSTALLER_REQUIREMENTS.md",
+    "docs/GENERATED_ASSETS.md",
+    "THIRD_PARTY_NOTICES.md",
     "LICENSE",
     "README.md",
     "README.ko.md"

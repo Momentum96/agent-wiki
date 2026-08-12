@@ -29,6 +29,7 @@ Build a globally installable CLI that can configure the local agent wiki workflo
 bun install -g @momentum96/agent-wiki
 agent-wiki doctor
 agent-wiki setup
+agent-wiki setup --with-obsidian-skills
 agent-wiki verify
 ```
 
@@ -80,7 +81,7 @@ The first production-ready version is successful when:
 
 ```text
 agent-wiki doctor [--json]
-agent-wiki setup [--project|--global] [--collection <name>] [--wiki-dir <path>] [--codex-home <path>] [--skip-embed] [--dry-run] [--install-prereqs] [--yes] [--no-install] [--json]
+agent-wiki setup [--project|--global] [--collection <name>] [--wiki-dir <path>] [--codex-home <path>] [--skip-embed] [--dry-run] [--with-obsidian-skills] [--install-prereqs] [--yes] [--no-install] [--json]
 agent-wiki verify [--project|--global] [--collection <name>] [--json]
 agent-wiki paths [--project|--global] [--collection <name>] [--json]
 ```
@@ -109,6 +110,14 @@ Project collections default to `agent-wiki-<repo-slug>`. Global/private memory k
 - `$CODEX_HOME/config.toml`
 - `$CODEX_HOME/skills/qmd-cli/SKILL.md`
 - `$CODEX_HOME/skills/agent-wiki-memory/SKILL.md`
+
+Optional Obsidian authoring skills are installed only by `setup --with-obsidian-skills`. That flag is the only installer ownership path for `defuddle`, `json-canvas`, `obsidian-bases`, `obsidian-cli`, and `obsidian-markdown` beneath `$CODEX_HOME/skills`. A default setup must preserve existing same-named directories without creating, changing, deleting, or reporting them.
+
+The optional assets retain their complete upstream trees and MIT licenses. `THIRD_PARTY_NOTICES.md` records Kepano as the source and pins revision `a1dc48e68138490d522c04cbf5822214c6eb1202`. The option only copies packaged files. It never installs Obsidian, plugins, Defuddle, or another runtime dependency.
+
+qmd remains the repository-memory workflow. An Obsidian operation requires a user-identified vault and the authorized tool for that request. The installer never chooses, creates, discovers, searches, indexes, refreshes, synchronizes, or mirrors a vault through qmd.
+
+The published package must include the public documentation and templates needed by the CLI, but exclude `docs/agent-wiki/`, which contains local project records.
 
 The implementation must allow target paths and collection names to be overridden by CLI flags or environment variables.
 

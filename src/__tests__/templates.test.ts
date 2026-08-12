@@ -5,6 +5,24 @@ import { join } from "node:path"
 
 import { copyTemplatesDryRun, listTemplateAssets } from "../core/templates"
 
+const OPTIONAL_TEMPLATE_PATHS = [
+  "skills/defuddle/LICENSE",
+  "skills/defuddle/SKILL.md",
+  "skills/json-canvas/LICENSE",
+  "skills/json-canvas/SKILL.md",
+  "skills/json-canvas/references/EXAMPLES.md",
+  "skills/obsidian-bases/LICENSE",
+  "skills/obsidian-bases/SKILL.md",
+  "skills/obsidian-bases/references/FUNCTIONS_REFERENCE.md",
+  "skills/obsidian-cli/LICENSE",
+  "skills/obsidian-cli/SKILL.md",
+  "skills/obsidian-markdown/LICENSE",
+  "skills/obsidian-markdown/SKILL.md",
+  "skills/obsidian-markdown/references/CALLOUTS.md",
+  "skills/obsidian-markdown/references/EMBEDS.md",
+  "skills/obsidian-markdown/references/PROPERTIES.md",
+] as const
+
 const tempDirs: string[] = []
 
 afterEach(async () => {
@@ -15,7 +33,7 @@ afterEach(async () => {
 
 describe("template inventory", () => {
   test("Given repository templates When listing assets Then every expected packaged file is present", async () => {
-    const assets = await listTemplateAssets({ templateDir: "templates" })
+    const assets = await listTemplateAssets({ templateDir: "templates", withObsidianSkills: false })
 
     expect(assets.map((asset) => asset.relativePath).sort()).toEqual([
       "agents/AGENTS.agent-wiki-block.md",
@@ -29,18 +47,79 @@ describe("template inventory", () => {
     ])
   })
 
-  test("Given temp target When dry-run copying Then templates are copied under target", async () => {
+  test("Given temp target When default dry-run copies Then only base templates are copied under target", async () => {
     const target = await mkdtemp(join(tmpdir(), "agent-wiki-test-"))
     tempDirs.push(target)
 
-    const report = await copyTemplatesDryRun({ templateDir: "templates", targetDir: target })
+    const report = await copyTemplatesDryRun({
+      templateDir: "templates",
+      targetDir: target,
+      withObsidianSkills: false,
+    })
 
     expect(report.ok).toBe(true)
     if (!report.ok) throw new Error("expected dry-run copy to succeed")
     expect(report.value.changed).toHaveLength(8)
+    expect(
+      report.value.changed.some((path) =>
+        OPTIONAL_TEMPLATE_PATHS.includes(path as typeof OPTIONAL_TEMPLATE_PATHS[number]),
+      ),
+    ).toBe(false)
     expect(await stat(join(target, "skills/qmd-cli/SKILL.md"))).toBeDefined()
     expect(await stat(join(target, "scripts/agent-wiki-log.sh"))).toBeDefined()
     expect(await stat(join(target, "scripts/agent-wiki-sanitize-log.ts"))).toBeDefined()
+  })
+
+  test("Given opt-in selection When listing and dry-run copying Then all 15 optional assets join the eight base assets", async () => {
+    const target = await mkdtemp(join(tmpdir(), "agent-wiki-obsidian-dry-run-"))
+    tempDirs.push(target)
+
+    const assets = await listTemplateAssets({ templateDir: "templates", withObsidianSkills: true })
+    const report = await copyTemplatesDryRun({
+      templateDir: "templates",
+      targetDir: target,
+      withObsidianSkills: true,
+    })
+
+    expect(
+      assets
+        .map((asset) => asset.relativePath)
+        .filter(
+          (path) =>
+            path.startsWith("skills/") &&
+            !path.includes("agent-wiki-memory") &&
+            !path.includes("qmd-cli"),
+        )
+        .sort(),
+    ).toEqual([...OPTIONAL_TEMPLATE_PATHS])
+    expect(report.ok).toBe(true)
+    if (!report.ok) throw new Error("expected opt-in dry-run copy to succeed")
+    expect(report.value.changed).toHaveLength(23)
+    expect(
+      report.value.changed
+        .filter((path) => OPTIONAL_TEMPLATE_PATHS.includes(path as typeof OPTIONAL_TEMPLATE_PATHS[number]))
+        .sort(),
+    ).toEqual([...OPTIONAL_TEMPLATE_PATHS])
+    for (const relativePath of OPTIONAL_TEMPLATE_PATHS) {
+      await expect(stat(join(target, relativePath))).resolves.toBeDefined()
+    }
+  })
+
+  test("Given a regular-file target When dry-run copying Then it returns a typed copy failure", async () => {
+    const root = await mkdtemp(join(tmpdir(), "agent-wiki-file-target-"))
+    tempDirs.push(root)
+    const target = join(root, "target-file")
+    await Bun.write(target, "not a directory")
+
+    const report = await copyTemplatesDryRun({
+      templateDir: "templates",
+      targetDir: target,
+      withObsidianSkills: true,
+    })
+
+    expect(report.ok).toBe(false)
+    if (report.ok) throw new Error("expected regular-file target to fail")
+    expect(report.error.kind).toBe("template_copy_failed")
   })
 
   test("Given sanitizer source and packaged copies When comparing implementation Then they stay in sync", async () => {
